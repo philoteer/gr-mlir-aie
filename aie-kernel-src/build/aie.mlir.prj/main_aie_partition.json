@@ -1,0 +1,33 @@
+{
+  "aie_partition": {
+    "name": "QoS",
+    "operations_per_cycle": "2048",
+    "inference_fingerprint": "23423",
+    "pre_post_fingerprint": "12345",
+    "partition": {
+      "column_width": 8,
+      "start_columns": [
+        0
+      ]
+    },
+    "PDIs": [
+      {
+        "uuid": "3b67c434-af58-4a8e-b4d0-9245c4863e5e",
+        "file_name": "/media/piloteer/SAMSUNG_EXT/XDNA/gr-mlir-aie/aie-kernel-src/build/aie.mlir.prj/main.pdi",
+        "cdo_groups": [
+          {
+            "name": "DPU",
+            "type": "PRIMARY",
+            "pdi_id": "0x01",
+            "dpu_kernel_ids": [
+              "0x901"
+            ],
+            "pre_cdo_groups": [
+              "0xC1"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

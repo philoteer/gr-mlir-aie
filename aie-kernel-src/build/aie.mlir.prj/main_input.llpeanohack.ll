@@ -1,0 +1,87 @@
+; ModuleID = 'LLVMDialectModule'
+source_filename = "LLVMDialectModule"
+target triple = "aie2p"
+
+@in_cons_buff_1 = external global [4096 x i8]
+@in_cons_buff_0 = external global [4096 x i8]
+@out_buff_1 = external global [4096 x i8]
+@out_buff_0 = external global [4096 x i8]
+
+declare void @debug_i32(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2p.event(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2p.put.ms(i32, i32)
+
+; Unknown intrinsic
+declare { i32, i32 } @llvm.aie2p.get.ss()
+
+; Unknown intrinsic
+declare void @llvm.aie2p.mcd.write.vec(<16 x i32>, i32)
+
+; Unknown intrinsic
+declare <16 x i32> @llvm.aie2p.scd.read.vec(i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2p.acquire(i32, i32)
+
+; Unknown intrinsic
+declare void @llvm.aie2p.release(i32, i32)
+
+define void @passthrough_fn(ptr %0, ptr %1, i32 %2) {
+  %4 = sext i32 %2 to i64
+  br label %5
+
+5:                                                ; preds = %8, %3
+  %6 = phi i64 [ %12, %8 ], [ 0, %3 ]
+  %7 = icmp slt i64 %6, %4
+  br i1 %7, label %8, label %13
+
+8:                                                ; preds = %5
+  %9 = getelementptr inbounds i8, ptr %0, i64 %6
+  %10 = load i8, ptr %9
+  %11 = getelementptr inbounds i8, ptr %1, i64 %6
+  store i8 %10, ptr %11
+  %12 = add i64 %6, 1
+  br label %5
+
+13:                                               ; preds = %5
+  ret void
+}
+
+define void @core_0_2() {
+  br label %1
+
+1:                                                ; preds = %4, %0
+  %2 = phi i64 [ %5, %4 ], [ 0, %0 ]
+  %3 = icmp slt i64 %2, 9223372036854775806
+  br i1 %3, label %4, label %6
+
+4:                                                ; preds = %1
+  call void @llvm.aie2p.acquire(i32 50, i32 -1)
+  call void @llvm.aie2p.acquire(i32 49, i32 -1)
+  call void @passthrough_fn(ptr @in_cons_buff_0, ptr @out_buff_0, i32 4096)
+  call void @llvm.aie2p.release(i32 48, i32 1)
+  call void @llvm.aie2p.release(i32 51, i32 1)
+  call void @llvm.aie2p.acquire(i32 50, i32 -1)
+  call void @llvm.aie2p.acquire(i32 49, i32 -1)
+  call void @passthrough_fn(ptr @in_cons_buff_1, ptr @out_buff_1, i32 4096)
+  call void @llvm.aie2p.release(i32 48, i32 1)
+  call void @llvm.aie2p.release(i32 51, i32 1)
+  %5 = add i64 %2, 2
+  br label %1
+
+6:                                                ; preds = %1
+  call void @llvm.aie2p.acquire(i32 50, i32 -1)
+  call void @llvm.aie2p.acquire(i32 49, i32 -1)
+  call void @passthrough_fn(ptr @in_cons_buff_0, ptr @out_buff_0, i32 4096)
+  call void @llvm.aie2p.release(i32 48, i32 1)
+  call void @llvm.aie2p.release(i32 51, i32 1)
+  ret void
+}
+
+!llvm.module.flags = !{!0}
+
+!0 = !{i32 2, !"Debug Info Version", i32 3}
