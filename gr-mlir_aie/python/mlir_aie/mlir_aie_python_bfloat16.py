@@ -6,6 +6,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 #
 
+
 import numpy as np
 from gnuradio import gr
 
@@ -18,19 +19,22 @@ from aie.iron.controlflow import range_
 import aie.iron as iron
 from aie.utils import NPUKernel, DefaultNPURuntime, get_current_device
 
-DEV = iron.get_current_device()
-DTYPE=np.int32
+import ml_dtypes
 
-class mlir_aie_python_int32(gr.basic_block):
+DEV = iron.get_current_device()
+DTYPE_GR=np.float32
+DTYPE_NPU=ml_dtypes.bfloat16
+
+class mlir_aie_python_bfloat16(gr.basic_block):
     """
-    docstring for block mlir_aie_python_int32
+    docstring for block mlir_aie_python_bfloat16
     """
-    def __init__(self, path_xclbin="aie-kernel-src/build/final.xclbin",path_insts_bin="aie-kernel-src/build/insts.bin", VECTOR_SIZE = 4096):
+    def __init__(self, path_xclbin="aie-kernel-src/build/final.xclbin",path_insts_bin="aie-kernel-src/build/insts.bin", VECTOR_SIZE = 8192):
         gr.basic_block.__init__(self,
-            name="mlir_aie_python_int32",
-            in_sig=[DTYPE, ],
-            out_sig=[DTYPE, ])
-            
+            name="mlir_aie_python_bfloat16",
+            in_sig=[DTYPE_GR, ],
+            out_sig=[DTYPE_GR, ])
+
         npu_kernel = NPUKernel(
             path_xclbin,
             path_insts_bin,
@@ -38,7 +42,7 @@ class mlir_aie_python_int32(gr.basic_block):
         )
          
         self.kernel_handle = DefaultNPURuntime.load(npu_kernel)
-        self.out_buf = iron.zeros(VECTOR_SIZE, dtype=DTYPE)
+        self.out_buf = iron.zeros(VECTOR_SIZE, dtype=DTYPE_NPU)
         self.VECTOR_SIZE = VECTOR_SIZE
 
     #TODO implement forecast()
@@ -64,13 +68,12 @@ class mlir_aie_python_int32(gr.basic_block):
             start_idx = i * self.VECTOR_SIZE
             end_idx = start_idx + self.VECTOR_SIZE
             
-            current_in_tensor = iron.tensor(in0[start_idx:end_idx], dtype=DTYPE)
+            current_in_tensor = iron.tensor(in0[start_idx:end_idx].astype(DTYPE_NPU), dtype=DTYPE_NPU)
             buffers = [current_in_tensor, self.out_buf] 
             DefaultNPURuntime.run(self.kernel_handle, buffers)                    
-            out0[start_idx:end_idx] = self.out_buf.numpy()
+            out0[start_idx:end_idx] = self.out_buf.numpy().astype(DTYPE_GR)
         
         total_processed = n_chunks * self.VECTOR_SIZE        
         self.consume_each(total_processed)
         
         return total_processed
-

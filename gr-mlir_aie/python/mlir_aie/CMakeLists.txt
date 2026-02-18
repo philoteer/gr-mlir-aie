@@ -22,7 +22,7 @@ add_subdirectory(bindings)
 gr_python_install(FILES __init__.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_aie)
 gr_python_install(FILES mlir_aie_python_uint8.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_aie)
 gr_python_install(FILES mlir_aie_python_int32.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_aie)
-
+gr_python_install(FILES mlir_aie_python_bfloat16.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_aie)
 ########################################################################
 # Handle the unit tests
 ########################################################################
@@ -37,3 +37,4 @@ add_custom_target(
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}
             ${PROJECT_BINARY_DIR}/test_modules/gnuradio/mlir_aie/)
 GR_ADD_TEST(qa_mlir_aie_python_uint8 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mlir_aie_python_uint8.py)
+GR_ADD_TEST(qa_mlir_aie_python_bfloat16 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mlir_aie_python_bfloat16.py)
