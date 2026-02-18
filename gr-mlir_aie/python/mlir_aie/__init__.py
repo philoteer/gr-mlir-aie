@@ -21,4 +21,5 @@ except ModuleNotFoundError:
 
 # import any pure python here
 from .mlir_aie_python_uint8 import mlir_aie_python_uint8
+from .mlir_aie_python_int32 import mlir_aie_python_int32
 #

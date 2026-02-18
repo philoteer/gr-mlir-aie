@@ -1,10 +1,10 @@
-id: mlir_aie_mlir_aie_python_uint8
-label: mlir_aie_python_uint8
+id: mlir_aie_mlir_aie_python_int32
+label: mlir_aie_python_int32
 category: '[mlir_aie]'
 
 templates:
   imports: from gnuradio import mlir_aie
-  make: mlir_aie.mlir_aie_python_uint8(${path_xclbin}, ${path_insts_bin}, ${VECTOR_SIZE})
+  make: mlir_aie.mlir_aie_python_int32(${path_xclbin}, ${path_insts_bin}, ${VECTOR_SIZE})
 
 #  Make one 'parameters' list entry for every parameter you want settable from the GUI.
 #     Keys include:
@@ -37,7 +37,7 @@ parameters:
 inputs:
 -   label: in
     domain: stream
-    dtype: byte
+    dtype: int
 #- label: ...
 #  dtype: ...
 #  vlen: ...
@@ -46,7 +46,7 @@ inputs:
 outputs:
 -   label: out
     domain: stream
-    dtype: byte
+    dtype: int
 #- label: ...
 #  domain: ...
 #  dtype: ...
