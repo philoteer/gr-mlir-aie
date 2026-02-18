@@ -23,6 +23,10 @@ parameters:
   dtype: file_open
   default: 'aie-kernel-src/build/insts.bin'
 
+- id: VECTOR_SIZE
+  label: VECTOR_SIZE
+  dtype: int
+  default: 16384
 #  Make one 'inputs' list entry per input and one 'outputs' list entry per output.
 #  Keys include:
 #      * label (an identifier for the GUI)
