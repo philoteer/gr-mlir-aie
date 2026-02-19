@@ -9,4 +9,5 @@
 ########################################################################
 # Install public header files
 ########################################################################
-install(FILES api.h DESTINATION include/gnuradio/mlir_aie)
+install(FILES api.h
+    mlir_aie_cpp_uint8.h DESTINATION include/gnuradio/mlir_aie)

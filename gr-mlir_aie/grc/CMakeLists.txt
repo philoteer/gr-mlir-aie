@@ -9,4 +9,5 @@
 install(FILES
     mlir_aie_mlir_aie_python_uint8.block.yml
     mlir_aie_mlir_aie_python_int32.block.yml
-    mlir_aie_mlir_aie_python_bfloat16.block.yml DESTINATION share/gnuradio/grc/blocks)
+    mlir_aie_mlir_aie_python_bfloat16.block.yml
+    mlir_aie_mlir_aie_cpp_uint8.block.yml DESTINATION share/gnuradio/grc/blocks)

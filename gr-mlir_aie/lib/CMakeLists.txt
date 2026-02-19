@@ -11,7 +11,8 @@
 ########################################################################
 include(GrPlatform) #define LIB_SUFFIX
 
-list(APPEND mlir_aie_sources)
+list(APPEND mlir_aie_sources
+    mlir_aie_cpp_uint8_impl.cc)
 
 set(mlir_aie_sources
     "${mlir_aie_sources}"

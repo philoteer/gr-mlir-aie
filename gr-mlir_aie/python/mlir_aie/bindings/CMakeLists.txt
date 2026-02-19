@@ -24,7 +24,8 @@ include(GrPybind)
 # Python Bindings
 ########################################################################
 
-list(APPEND mlir_aie_python_files python_bindings.cc)
+list(APPEND mlir_aie_python_files
+    mlir_aie_cpp_uint8_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(mlir_aie ../../.. gr::mlir_aie "${mlir_aie_python_files}")
 
