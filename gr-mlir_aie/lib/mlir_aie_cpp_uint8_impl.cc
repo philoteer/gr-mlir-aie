@@ -6,6 +6,16 @@
  */
 
 #include "mlir_aie_cpp_uint8_impl.h"
+#include "runtime_lib/test_lib/test_utils.h"
+#include "xrt/xrt_bo.h"
+#include "xrt/xrt_device.h"
+#include "xrt/xrt_kernel.h"
+
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 #include <gnuradio/io_signature.h>
 
 namespace gr {

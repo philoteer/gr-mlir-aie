@@ -27,7 +27,8 @@ target_link_libraries(gnuradio-mlir_aie gnuradio::gnuradio-runtime)
 target_include_directories(
     gnuradio-mlir_aie
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
-    PUBLIC $<INSTALL_INTERFACE:include>)
+    PUBLIC $<INSTALL_INTERFACE:include>
+    PUBLIC /opt/xilinx/xrt/include)
 set_target_properties(gnuradio-mlir_aie PROPERTIES DEFINE_SYMBOL "gnuradio_mlir_aie_EXPORTS")
 
 if(APPLE)
