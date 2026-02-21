@@ -10,8 +10,21 @@
 
 #include <gnuradio/mlir_aie/mlir_aie_cpp_uint8.h>
 
+#include "runtime_lib/test_lib/test_utils.h"
+#include "xrt/xrt_bo.h"
+#include "xrt/xrt_device.h"
+#include "xrt/xrt_kernel.h"
+
+#include <cstdint>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+
 namespace gr {
 namespace mlir_aie {
+
+using input_type = std::uint8_t;
+using output_type = std::uint8_t;
 
 class mlir_aie_cpp_uint8_impl : public mlir_aie_cpp_uint8
 {
@@ -19,6 +32,17 @@ private:
     const char* _path_xclbin;
     const char* _path_insts_bin;
     int _VECTOR_SIZE;
+    const char* _kernel_name;
+    int _trace_size;
+    unsigned int _opcode_run;
+    xrt::kernel _kernel;
+    xrt::bo _bo_instr, _bo_inA, _bo_out;
+    std::vector<uint32_t> _instr_v;
+    
+    input_type *_bufInA ;        
+    output_type *_bufOut ;
+
+    
     // Nothing to declare in this block.
 
 public:

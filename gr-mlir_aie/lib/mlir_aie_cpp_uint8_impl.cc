@@ -6,23 +6,11 @@
  */
 
 #include "mlir_aie_cpp_uint8_impl.h"
-#include "runtime_lib/test_lib/test_utils.h"
-#include "xrt/xrt_bo.h"
-#include "xrt/xrt_device.h"
-#include "xrt/xrt_kernel.h"
-
-#include <cstdint>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-
 #include <gnuradio/io_signature.h>
 
 namespace gr {
 namespace mlir_aie {
 
-using input_type = unsigned char;
-using output_type = unsigned char;
 mlir_aie_cpp_uint8::sptr mlir_aie_cpp_uint8::make(const char* path_xclbin,
                                                   const char* path_insts_bin,
                                                   int VECTOR_SIZE)
@@ -34,6 +22,7 @@ mlir_aie_cpp_uint8::sptr mlir_aie_cpp_uint8::make(const char* path_xclbin,
 
 /*
  * The private constructor
+ * Based on the official AMD mlir-aie passthru kernel test.cpp example
  */
 mlir_aie_cpp_uint8_impl::mlir_aie_cpp_uint8_impl(const char* path_xclbin,
                                                  const char* path_insts_bin,
@@ -47,6 +36,40 @@ mlir_aie_cpp_uint8_impl::mlir_aie_cpp_uint8_impl(const char* path_xclbin,
     _path_xclbin = path_xclbin;
     _path_insts_bin = path_insts_bin;
     _VECTOR_SIZE = VECTOR_SIZE;
+    _kernel_name =  "MLIR_AIE:MLIRAIE"; //TODO FIX (make this a parameter?)
+    _trace_size = 0;
+    _opcode_run = 3;
+    xrt::device device;
+
+    // Load instruction sequence
+    std::vector<uint32_t> _instr_v = test_utils::load_instr_binary(path_insts_bin);
+    std::cout << "Sequence instr count: " << _instr_v.size() << "\n";
+    
+    // Start the XRT context and load the kernel
+    test_utils::init_xrt_load_kernel(device, _kernel, 0,
+                                   path_xclbin,
+                                   _kernel_name);
+
+    std::cout << "#1";
+    // set up the buffer objects
+    _bo_instr = xrt::bo(device, _instr_v.size() * sizeof(int),
+                          XCL_BO_FLAGS_CACHEABLE, _kernel.group_id(1));
+    _bo_inA = xrt::bo(device,  _VECTOR_SIZE * sizeof(input_type),
+                        XRT_BO_FLAGS_HOST_ONLY, _kernel.group_id(3));
+    _bo_out =
+      xrt::bo(device,  _VECTOR_SIZE * sizeof(output_type) + _trace_size,
+              XRT_BO_FLAGS_HOST_ONLY, _kernel.group_id(3));
+              
+    std::cout << "Writing data into buffer objects.\n";
+
+    // Copy instruction stream to xrt buffer object
+    void *bufInstr = _bo_instr.map<void *>();
+    memcpy(bufInstr, _instr_v.data(), _instr_v.size() * sizeof(int));
+    
+    // Initialize buffers
+    _bufInA = _bo_inA.map<input_type *>();     
+    _bufOut = _bo_out.map<output_type *>();
+    
 }
 
 /*
@@ -72,7 +95,30 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
     {
         return 0;
     }
+
+    // ## AIE code goes below
+    for (int i = 0; i < _VECTOR_SIZE; i++) //TODO maybe try memcpy
+        _bufInA[i] = in[i];
+
+    memset(_bufOut, 0, _VECTOR_SIZE * sizeof(output_type) + _trace_size); //TODO does this matter? maybe I can remove this line.
+
+    // sync host to device memories
+    _bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    _bo_out.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     
+    // Execute the kernel and wait to finish
+    std::cout << "Running Kernel.\n";
+    auto run = _kernel(_opcode_run, _bo_instr, _instr_v.size(), _bo_inA, _bo_out);
+    run.wait();
+
+    // Sync device to host memories
+    _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+
+    for (int i = 0; i < _VECTOR_SIZE; i++) //TODO maybe try memcpy
+        out[i] = _bufOut[i];
+
+    // ## Back to GNURadio
     consume_each(_VECTOR_SIZE);
     return _VECTOR_SIZE;
 }

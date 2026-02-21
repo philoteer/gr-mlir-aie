@@ -12,7 +12,8 @@
 include(GrPlatform) #define LIB_SUFFIX
 
 list(APPEND mlir_aie_sources
-    mlir_aie_cpp_uint8_impl.cc)
+    mlir_aie_cpp_uint8_impl.cc
+    runtime_lib/test_lib/test_utils.cpp)
 
 set(mlir_aie_sources
     "${mlir_aie_sources}"
@@ -22,8 +23,10 @@ if(NOT mlir_aie_sources)
     return()
 endif(NOT mlir_aie_sources)
 
+find_library(XRT_LIB NAMES xrt_coreutil HINTS /opt/xilinx/xrt/lib)
+
 add_library(gnuradio-mlir_aie SHARED ${mlir_aie_sources})
-target_link_libraries(gnuradio-mlir_aie gnuradio::gnuradio-runtime)
+target_link_libraries(gnuradio-mlir_aie gnuradio::gnuradio-runtime     ${XRT_LIB})
 target_include_directories(
     gnuradio-mlir_aie
     PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
