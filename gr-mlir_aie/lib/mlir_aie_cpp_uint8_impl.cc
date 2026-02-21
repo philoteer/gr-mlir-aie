@@ -36,7 +36,7 @@ mlir_aie_cpp_uint8_impl::mlir_aie_cpp_uint8_impl(const char* path_xclbin,
     _path_xclbin = path_xclbin;
     _path_insts_bin = path_insts_bin;
     _VECTOR_SIZE = VECTOR_SIZE;
-    _kernel_name =  "MLIR_AIE:MLIRAIE"; //TODO FIX (make this a parameter?)
+    _kernel_name =  "MLIR_AIE"; //TODO FIX (make this a parameter?)
     _trace_size = 0;
     _opcode_run = 3;
     xrt::device device;
@@ -46,11 +46,11 @@ mlir_aie_cpp_uint8_impl::mlir_aie_cpp_uint8_impl(const char* path_xclbin,
     std::cout << "Sequence instr count: " << _instr_v.size() << "\n";
     
     // Start the XRT context and load the kernel
-    test_utils::init_xrt_load_kernel(device, _kernel, 0,
+    test_utils::init_xrt_load_kernel(device, _kernel, 1,
                                    path_xclbin,
                                    _kernel_name);
 
-    std::cout << "#1";
+    std::cout << "kernel load ok";
     // set up the buffer objects
     _bo_instr = xrt::bo(device, _instr_v.size() * sizeof(int),
                           XCL_BO_FLAGS_CACHEABLE, _kernel.group_id(1));
@@ -70,6 +70,8 @@ mlir_aie_cpp_uint8_impl::mlir_aie_cpp_uint8_impl(const char* path_xclbin,
     _bufInA = _bo_inA.map<input_type *>();     
     _bufOut = _bo_out.map<output_type *>();
     
+    _bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+
 }
 
 /*
@@ -103,12 +105,11 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
     memset(_bufOut, 0, _VECTOR_SIZE * sizeof(output_type) + _trace_size); //TODO does this matter? maybe I can remove this line.
 
     // sync host to device memories
-    _bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     _bo_out.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     
     // Execute the kernel and wait to finish
-    std::cout << "Running Kernel.\n";
+    //std::cout << "Running Kernel.\n";
     auto run = _kernel(_opcode_run, _bo_instr, _instr_v.size(), _bo_inA, _bo_out);
     run.wait();
 
