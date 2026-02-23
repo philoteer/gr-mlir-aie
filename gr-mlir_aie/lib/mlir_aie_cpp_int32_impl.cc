@@ -118,10 +118,7 @@ int mlir_aie_cpp_int32_impl::general_work(int noutput_items,
 
         _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
         
-        //TODO maybe switch to run.start(); as suggested in https://xilinx.github.io/XRT/master/html/xrt_native_apis.html#kernel-and-run
         _run.start();
-        
-        // 3. 커널 완료 대기
         _run.wait();
         
         _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
