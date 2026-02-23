@@ -22,6 +22,7 @@ namespace py = pybind11;
 /**************************************/
 // BINDING_FUNCTION_PROTOTYPES(
     void bind_mlir_aie_cpp_uint8(py::module& m);
+    void bind_mlir_aie_cpp_int32(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -51,5 +52,6 @@ PYBIND11_MODULE(mlir_aie_python, m)
     /**************************************/
     // BINDING_FUNCTION_CALLS(
     bind_mlir_aie_cpp_uint8(m);
+    bind_mlir_aie_cpp_int32(m);
     // ) END BINDING_FUNCTION_CALLS
 }
