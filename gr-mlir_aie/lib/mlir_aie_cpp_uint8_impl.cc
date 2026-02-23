@@ -100,9 +100,9 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
     }
 
     // ## AIE code goes below
-    for (int i = 0; i < _VECTOR_SIZE; i++) //TODO maybe try memcpy
-        _bufInA[i] = in[i];
-
+    //for (int i = 0; i < _VECTOR_SIZE; i++) 
+    //    _bufInA[i] = in[i];
+    memcpy(_bufInA, in, _VECTOR_SIZE * sizeof(input_type));
 
     // sync host to device memories
     _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
@@ -115,11 +115,12 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
     // Sync device to host memories
     _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
 
-    for (int i = 0; i < _VECTOR_SIZE; i++) //TODO maybe try memcpy
-    {
-        //std::cout << _bufOut[i];
-        out[i] = _bufOut[i];
-    }
+    //for (int i = 0; i < _VECTOR_SIZE; i++) //TODO maybe try memcpy
+    //{
+    //    //std::cout << _bufOut[i];
+    //    out[i] = _bufOut[i];
+    //}
+    memcpy(out, _bufOut, _VECTOR_SIZE * sizeof(output_type));
 
     // ## Back to GNURadio
     consume_each(_VECTOR_SIZE);
