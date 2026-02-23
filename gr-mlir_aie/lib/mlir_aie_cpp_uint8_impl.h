@@ -38,9 +38,12 @@ private:
     xrt::kernel _kernel;
     xrt::bo _bo_instr, _bo_inA, _bo_out;
     std::vector<uint32_t> _instr_v;
+    xrt::device _device;
+
     
     input_type *_bufInA ;        
     output_type *_bufOut ;
+    void *bufInstr;
 
     
     // Nothing to declare in this block.

@@ -39,37 +39,38 @@ mlir_aie_cpp_uint8_impl::mlir_aie_cpp_uint8_impl(const char* path_xclbin,
     _kernel_name =  "MLIR_AIE"; //TODO FIX (make this a parameter?)
     _trace_size = 0;
     _opcode_run = 3;
-    xrt::device device;
 
     // Load instruction sequence
-    std::vector<uint32_t> _instr_v = test_utils::load_instr_binary(path_insts_bin);
+    _instr_v = test_utils::load_instr_binary(path_insts_bin);
     std::cout << "Sequence instr count: " << _instr_v.size() << "\n";
     
     // Start the XRT context and load the kernel
-    test_utils::init_xrt_load_kernel(device, _kernel, 1,
+    test_utils::init_xrt_load_kernel(_device, _kernel, 1,
                                    path_xclbin,
                                    _kernel_name);
 
     std::cout << "kernel load ok";
     // set up the buffer objects
-    _bo_instr = xrt::bo(device, _instr_v.size() * sizeof(int),
+    _bo_instr = xrt::bo(_device, _instr_v.size() * sizeof(int),
                           XCL_BO_FLAGS_CACHEABLE, _kernel.group_id(1));
-    _bo_inA = xrt::bo(device,  _VECTOR_SIZE * sizeof(input_type),
+    _bo_inA = xrt::bo(_device,  _VECTOR_SIZE * sizeof(input_type),
                         XRT_BO_FLAGS_HOST_ONLY, _kernel.group_id(3));
     _bo_out =
-      xrt::bo(device,  _VECTOR_SIZE * sizeof(output_type) + _trace_size,
+      xrt::bo(_device,  _VECTOR_SIZE * sizeof(output_type) + _trace_size,
               XRT_BO_FLAGS_HOST_ONLY, _kernel.group_id(3));
               
     std::cout << "Writing data into buffer objects.\n";
 
     // Copy instruction stream to xrt buffer object
-    void *bufInstr = _bo_instr.map<void *>();
+    bufInstr = _bo_instr.map<void *>();
     memcpy(bufInstr, _instr_v.data(), _instr_v.size() * sizeof(int));
     
     // Initialize buffers
     _bufInA = _bo_inA.map<input_type *>();     
     _bufOut = _bo_out.map<output_type *>();
-    
+     memset(_bufOut, 42, _VECTOR_SIZE * sizeof(output_type) + _trace_size); //TODO does this matter? maybe I can remove this line.
+     
+    _bo_out.sync(XCL_BO_SYNC_BO_TO_DEVICE);   
     _bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
 }
@@ -102,11 +103,9 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
     for (int i = 0; i < _VECTOR_SIZE; i++) //TODO maybe try memcpy
         _bufInA[i] = in[i];
 
-    memset(_bufOut, 0, _VECTOR_SIZE * sizeof(output_type) + _trace_size); //TODO does this matter? maybe I can remove this line.
 
     // sync host to device memories
     _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
-    _bo_out.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     
     // Execute the kernel and wait to finish
     //std::cout << "Running Kernel.\n";
@@ -117,7 +116,10 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
     _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
 
     for (int i = 0; i < _VECTOR_SIZE; i++) //TODO maybe try memcpy
+    {
+        //std::cout << _bufOut[i];
         out[i] = _bufOut[i];
+    }
 
     // ## Back to GNURadio
     consume_each(_VECTOR_SIZE);
