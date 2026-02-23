@@ -100,7 +100,7 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
     }
     
     int n_chunks = noutput_items / _VECTOR_SIZE;
-   for (int i = 0; i < n_chunks; i++) {
+    for (int i = 0; i < n_chunks; i++) {
         
         const input_type* in_ptr = in + (i * _VECTOR_SIZE);
         output_type* out_ptr = out + (i * _VECTOR_SIZE);
@@ -109,6 +109,7 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
 
         _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
         
+        //TODO maybe switch to run.start(); as suggested in https://xilinx.github.io/XRT/master/html/xrt_native_apis.html#kernel-and-run
         auto run = _kernel(_opcode_run, _bo_instr, _instr_v.size(), _bo_inA, _bo_out);
         run.wait();
 
