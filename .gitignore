@@ -1,3 +1,5 @@
 gr-mlir_aie/docs/doxygen/doxyxml/__pycache__/
 gr-mlir_aie/build/
 aie-kernel-src/build/
+__pycache__/
+
