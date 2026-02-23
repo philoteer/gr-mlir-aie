@@ -36,6 +36,11 @@ target_include_directories(
     PUBLIC /opt/xilinx/xrt/include)
 set_target_properties(gnuradio-mlir_aie PROPERTIES DEFINE_SYMBOL "gnuradio_mlir_aie_EXPORTS")
 
+target_compile_options(gnuradio-mlir_aie PRIVATE
+  -mavx512f
+  -mavx512bf16
+)
+
 if(APPLE)
     set_target_properties(gnuradio-mlir_aie PROPERTIES INSTALL_NAME_DIR
                                                     "${CMAKE_INSTALL_PREFIX}/lib")

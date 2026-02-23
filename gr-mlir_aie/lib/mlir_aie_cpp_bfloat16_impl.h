@@ -19,6 +19,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <immintrin.h> 
 
 namespace gr {
 namespace mlir_aie {
@@ -61,7 +62,11 @@ private:
         std::memcpy(&f, &x, sizeof(uint32_t));
         return f;
     }
-    
+    #ifndef _mm512_castbh_si512
+    static inline __m512i _mm512_castbh_si512(__m512bh a) {
+        return (__m512i)a;
+    }
+    #endif
 public:
     mlir_aie_cpp_bfloat16_impl(const char* path_xclbin,
                                const char* path_insts_bin,

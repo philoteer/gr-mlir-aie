@@ -104,6 +104,7 @@ void mlir_aie_cpp_bfloat16_impl::forecast(int noutput_items,
     ninput_items_required[0] = noutput_items;
 }
 
+
 int mlir_aie_cpp_bfloat16_impl::general_work(int noutput_items,
                                              gr_vector_int& ninput_items,
                                              gr_vector_const_void_star& input_items,
@@ -123,8 +124,28 @@ int mlir_aie_cpp_bfloat16_impl::general_work(int noutput_items,
         
         const gr_input_type* in_ptr = in + (i * _VECTOR_SIZE);
         gr_output_type* out_ptr = out + (i * _VECTOR_SIZE);
+        int j = 0;
+        
+        const int vec_step = 32;
+        if (_VECTOR_SIZE >= vec_step) {
+            for (; j <= _VECTOR_SIZE - vec_step; j += vec_step) {
+                // Load 32 floats: 16 into reg_b (low), 16 into reg_a (high)
+                // Note: vcvtne2ps2bf16 expects 'a' to be the upper half source 
+                // and 'b' to be the lower half source.
+                __m512 input_low  = _mm512_loadu_ps(&in_ptr[j]);
+                __m512 input_high = _mm512_loadu_ps(&in_ptr[j + 16]);
 
-        for (int j = 0; j < _VECTOR_SIZE; j++) {
+                // Perform conversion
+                __m512bh bf16_vec = _mm512_cvtne2ps_pbh(input_high, input_low);
+
+                // Store 32 bf16 values (512 bits)
+                // Casting to __m512i for store intrinsic
+                _mm512_storeu_si512((void*)&_bufInA[j], _mm512_castbh_si512(bf16_vec));
+            }
+        }
+
+        // Scalar fallback for remaining elements (or if VECTOR_SIZE < 32)
+        for (; j < _VECTOR_SIZE; j++) {
             _bufInA[j] = float_to_bfloat16(in_ptr[j]);
         }
 
