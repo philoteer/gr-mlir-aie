@@ -98,33 +98,29 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
     {
         return 0;
     }
-
-    // ## AIE code goes below
-    //for (int i = 0; i < _VECTOR_SIZE; i++) 
-    //    _bufInA[i] = in[i];
-    memcpy(_bufInA, in, _VECTOR_SIZE * sizeof(input_type));
-
-    // sync host to device memories
-    _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     
-    // Execute the kernel and wait to finish
-    //std::cout << "Running Kernel.\n";
-    auto run = _kernel(_opcode_run, _bo_instr, _instr_v.size(), _bo_inA, _bo_out);
-    run.wait();
+    int n_chunks = noutput_items / _VECTOR_SIZE;
+   for (int i = 0; i < n_chunks; i++) {
+        
+        const input_type* in_ptr = in + (i * _VECTOR_SIZE);
+        output_type* out_ptr = out + (i * _VECTOR_SIZE);
 
-    // Sync device to host memories
-    _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+        memcpy(_bufInA, in_ptr, _VECTOR_SIZE * sizeof(input_type));
 
-    //for (int i = 0; i < _VECTOR_SIZE; i++) //TODO maybe try memcpy
-    //{
-    //    //std::cout << _bufOut[i];
-    //    out[i] = _bufOut[i];
-    //}
-    memcpy(out, _bufOut, _VECTOR_SIZE * sizeof(output_type));
+        _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+        
+        auto run = _kernel(_opcode_run, _bo_instr, _instr_v.size(), _bo_inA, _bo_out);
+        run.wait();
+
+        _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+        memcpy(out_ptr, _bufOut, _VECTOR_SIZE * sizeof(output_type));
+    }
 
     // ## Back to GNURadio
-    consume_each(_VECTOR_SIZE);
-    return _VECTOR_SIZE;
+    int processed_items = n_chunks * _VECTOR_SIZE;
+    consume_each(processed_items);
+    
+    return processed_items;
 }
 
 } /* namespace mlir_aie */
