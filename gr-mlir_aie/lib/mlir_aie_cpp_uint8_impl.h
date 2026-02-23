@@ -39,7 +39,7 @@ private:
     xrt::bo _bo_instr, _bo_inA, _bo_out;
     std::vector<uint32_t> _instr_v;
     xrt::device _device;
-
+    xrt::run _run;
     
     input_type *_bufInA ;        
     output_type *_bufOut ;

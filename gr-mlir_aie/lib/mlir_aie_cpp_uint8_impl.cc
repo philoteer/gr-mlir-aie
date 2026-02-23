@@ -73,6 +73,14 @@ mlir_aie_cpp_uint8_impl::mlir_aie_cpp_uint8_impl(const char* path_xclbin,
     _bo_out.sync(XCL_BO_SYNC_BO_TO_DEVICE);   
     _bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
 
+    _run = xrt::run(_kernel);
+    
+    _run.set_arg(0, _opcode_run);
+    _run.set_arg(1, _bo_instr);
+    _run.set_arg(2, _instr_v.size());
+    _run.set_arg(3, _bo_inA);
+    _run.set_arg(4, _bo_out);
+    
 }
 
 /*
@@ -110,9 +118,11 @@ int mlir_aie_cpp_uint8_impl::general_work(int noutput_items,
         _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
         
         //TODO maybe switch to run.start(); as suggested in https://xilinx.github.io/XRT/master/html/xrt_native_apis.html#kernel-and-run
-        auto run = _kernel(_opcode_run, _bo_instr, _instr_v.size(), _bo_inA, _bo_out);
-        run.wait();
-
+        _run.start();
+        
+        // 3. 커널 완료 대기
+        _run.wait();
+        
         _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
         memcpy(out_ptr, _bufOut, _VECTOR_SIZE * sizeof(output_type));
     }
