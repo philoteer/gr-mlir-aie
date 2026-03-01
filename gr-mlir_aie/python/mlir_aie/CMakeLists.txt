@@ -38,3 +38,4 @@ add_custom_target(
             ${PROJECT_BINARY_DIR}/test_modules/gnuradio/mlir_aie/)
 GR_ADD_TEST(qa_mlir_aie_python_uint8 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mlir_aie_python_uint8.py)
 GR_ADD_TEST(qa_mlir_aie_python_bfloat16 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mlir_aie_python_bfloat16.py)
+GR_ADD_TEST(qa_mlir_aie_cpp_int16 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mlir_aie_cpp_int16.py)

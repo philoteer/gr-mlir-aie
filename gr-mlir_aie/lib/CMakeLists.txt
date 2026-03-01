@@ -15,7 +15,8 @@ list(APPEND mlir_aie_sources
     mlir_aie_cpp_uint8_impl.cc
     runtime_lib/test_lib/test_utils.cpp
     mlir_aie_cpp_int32_impl.cc
-    mlir_aie_cpp_bfloat16_impl.cc)
+    mlir_aie_cpp_bfloat16_impl.cc
+    mlir_aie_cpp_int16_impl.cc)
 
 set(mlir_aie_sources
     "${mlir_aie_sources}"
