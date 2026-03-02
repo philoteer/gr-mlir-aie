@@ -13,4 +13,6 @@ install(FILES
     mlir_aie_mlir_aie_cpp_uint8.block.yml
     mlir_aie_mlir_aie_cpp_int32.block.yml
     mlir_aie_mlir_aie_cpp_bfloat16.block.yml
-    mlir_aie_mlir_aie_cpp_int16.block.yml DESTINATION share/gnuradio/grc/blocks)
+    mlir_aie_mlir_aie_cpp_int16.block.yml
+    mlir_aie_float32_to_bfloat16.block.yml
+    mlir_aie_bfloat16_to_float32.block.yml DESTINATION share/gnuradio/grc/blocks)
