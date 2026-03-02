@@ -27,6 +27,8 @@ namespace py = pybind11;
     void bind_mlir_aie_cpp_int16(py::module& m);
     void bind_float32_to_bfloat16(py::module& m);
     void bind_bfloat16_to_float32(py::module& m);
+    void bind_complex64_to_cbfloat(py::module& m);
+    void bind_cbfloat_to_complex64(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -61,5 +63,7 @@ PYBIND11_MODULE(mlir_aie_python, m)
     bind_mlir_aie_cpp_int16(m);
     bind_float32_to_bfloat16(m);
     bind_bfloat16_to_float32(m);
+    bind_complex64_to_cbfloat(m);
+    bind_cbfloat_to_complex64(m);
     // ) END BINDING_FUNCTION_CALLS
 }
