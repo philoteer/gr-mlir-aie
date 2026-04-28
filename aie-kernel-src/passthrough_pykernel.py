@@ -8,19 +8,15 @@
 import numpy as np
 import sys
 
+import aie.iron as iron
 from aie.iron import ObjectFifo, Program, Runtime, Worker
 from aie.iron.placers import SequentialPlacer
 from aie.iron.device import NPU1Col1, NPU2
 from aie.iron.controlflow import range_
 from aie.helpers.dialects.func import func
-import aie.iron as iron
 
-#dev = NPU1Col1()
-
-#dev = NPU2()
 dev = iron.get_current_device()
 vector_size=16384
-
 
 # Define tensor types
 line_size = vector_size // 4
