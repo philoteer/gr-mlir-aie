@@ -16,12 +16,12 @@ from aie.iron.controlflow import range_
 from aie.helpers.dialects.func import func
 
 dev = iron.get_current_device()
-vector_size=16384
+vector_size=4096
+line_size = vector_size // 4
 
 # Define tensor types
-line_size = vector_size // 4
-line_type = np.ndarray[(line_size,), np.dtype[np.int8]]
-vector_type = np.ndarray[(vector_size,), np.dtype[np.int8]]
+line_type = np.ndarray[(line_size,), np.dtype[np.int32]]
+vector_type = np.ndarray[(vector_size,), np.dtype[np.int32]]
 
 # Dataflow with ObjectFifos
 of_in = ObjectFifo(line_type, name="in")
