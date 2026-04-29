@@ -34,7 +34,7 @@ scalar_ty = np.ndarray[(1,), np.dtype[np.int32]]
 
 # External, binary kernel definition
 scale_fn = Kernel(
-    "vector_scalar_mul_aie_scalar",
+    "vector_scalar_mul_scalar",
     "scale.o",
     [tile_ty, tile_ty, np.int32],
 )

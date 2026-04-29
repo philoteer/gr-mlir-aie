@@ -47,7 +47,7 @@ build/aie.mlir: ${srcdir}/aie2.py
 	mkdir -p ${@D}
 	python3 $< ${devicename} > $@
 	
-build/scale.o: ${srcdir}/vector_scalar_mul.cc
+build/scale.o: ${srcdir}/scale.cc
 	mkdir -p ${@D}
 	echo "NPU Type = $(devicename)"
 ifeq ($(devicename),npu)
