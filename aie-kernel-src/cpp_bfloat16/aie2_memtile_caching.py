@@ -36,6 +36,7 @@ scale_fn = Kernel(
 )
 
 # Input data movement
+# See https://github.com/Xilinx/mlir-aie/tree/main/programming_guide/section-2/section-2a for ObjectFIFO constructor
 of_in = ObjectFifo(tile_ty, name="in")
 of_in_mem = of_in.cons().forward(name="in_mem")
 
