@@ -7,7 +7,7 @@
 # (c) Copyright 2025 Advanced Micro Devices, Inc. or its affiliates
 
 #example for memtile cacheing.
-
+#see guide at: https://github.com/Xilinx/mlir-aie/blob/main/programming_guide/section-2/section-2b/03_Implicit_Copy/README.md
 import numpy as np
 import ml_dtypes
 import sys
