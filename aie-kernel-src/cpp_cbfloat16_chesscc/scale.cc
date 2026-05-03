@@ -21,7 +21,7 @@ extern "C" {
 
 void vector_scalar_mul_vector(cbfloat16 *a, cbfloat16 *c, int32_t N) {
   
-  constexpr int vec_factor = 32; 
+  constexpr int vec_factor = 16; 
   cbfloat16 *__restrict pA1 = a;
   cbfloat16 *__restrict pC1 = c;
   const int F = N / vec_factor;
