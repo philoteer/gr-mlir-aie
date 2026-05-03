@@ -43,7 +43,7 @@ all: build/final.xclbin build/insts.bin
 targetname = vectorScalar
 devicename ?= $(if $(filter 1,$(NPU2)),npu2,npu)
 
-build/aie.mlir: ${srcdir}/aie2_memtile_cacheing.py
+build/aie.mlir: ${srcdir}/aie2_memtile_caching.py
 	mkdir -p ${@D}
 	python3 $< ${devicename} > $@
 	

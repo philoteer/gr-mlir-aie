@@ -48,7 +48,7 @@ def core_fn(of_in, of_out, scale_scalar):
     for _ in range_(4):
         elem_in = of_in.acquire(1)
         elem_out = of_out.acquire(1)
-        scale_scalar(elem_in, elem_out, 2048)
+        scale_scalar(elem_in, elem_out, tile_size)
         of_in.release(1)
         of_out.release(1)
 
