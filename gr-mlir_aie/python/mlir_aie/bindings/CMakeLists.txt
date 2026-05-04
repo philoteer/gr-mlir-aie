@@ -32,7 +32,8 @@ list(APPEND mlir_aie_python_files
     float32_to_bfloat16_python.cc
     bfloat16_to_float32_python.cc
     complex64_to_cbfloat_python.cc
-    cbfloat_to_complex64_python.cc python_bindings.cc)
+    cbfloat_to_complex64_python.cc
+    mlire_aie_cpp_int32_to_int16_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(mlir_aie ../../.. gr::mlir_aie "${mlir_aie_python_files}")
 

@@ -20,7 +20,8 @@ list(APPEND mlir_aie_sources
     float32_to_bfloat16_impl.cc
     bfloat16_to_float32_impl.cc
     complex64_to_cbfloat_impl.cc
-    cbfloat_to_complex64_impl.cc)
+    cbfloat_to_complex64_impl.cc
+    mlire_aie_cpp_int32_to_int16_impl.cc)
 
 set(mlir_aie_sources
     "${mlir_aie_sources}"
