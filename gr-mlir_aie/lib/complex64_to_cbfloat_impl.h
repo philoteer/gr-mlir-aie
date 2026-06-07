@@ -26,7 +26,7 @@ private:
     }
     
     static uint32_t complex_to_cbfloat(gr_complex f){
-        return (float_to_bfloat16(f.real()) << 16) + float_to_bfloat16(f.imag());
+        return (float_to_bfloat16(f.imag()) << 16) + float_to_bfloat16(f.real());
     }
     
     #ifndef _mm512_castbh_si512

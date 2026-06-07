@@ -27,7 +27,7 @@ private:
     }
     
     static gr_complex cbfloat_to_complex(uint32_t val){
-        return gr_complex(bfloat16_to_float(val >>16), bfloat16_to_float(val & 0xFFFFu));
+        return gr_complex(bfloat16_to_float(val & 0xFFFFu), bfloat16_to_float(val >>16));
     }
     
     
