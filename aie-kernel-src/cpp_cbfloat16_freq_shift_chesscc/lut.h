@@ -2,7 +2,7 @@
 // Generated using numpy and ml_dtypes
 #pragma once
 #include <aie_api/aie_types.hpp>
-#DEFINE LUT_SIZE 512
+#define LUT_SIZE 512
 
 alignas(32) const cbfloat16 freq_shift_lut[LUT_SIZE] = {
     { (bfloat16)1.0f, (bfloat16)0.0f }, // k=0
