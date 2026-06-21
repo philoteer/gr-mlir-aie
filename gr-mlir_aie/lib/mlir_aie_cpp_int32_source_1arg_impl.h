@@ -19,12 +19,15 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <vector>
 
 namespace gr {
 namespace mlir_aie {
 
 using arg_type = float;
 using output_type = std::int32_t;
+
+constexpr int source_arg_count = 4;
 
 class mlir_aie_cpp_int32_source_1arg_impl : public mlir_aie_cpp_int32_source_1arg
 {
@@ -45,6 +48,7 @@ private:
     output_type *_bufOut ;
     void *bufInstr;
     float _arg1;
+    std::vector<arg_type> _arg_values;
 
 public:
     mlir_aie_cpp_int32_source_1arg_impl(const char* path_xclbin,

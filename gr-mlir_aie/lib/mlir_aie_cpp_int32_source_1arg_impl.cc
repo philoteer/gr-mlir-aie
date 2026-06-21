@@ -8,6 +8,8 @@
 #include "mlir_aie_cpp_int32_source_1arg_impl.h"
 #include <gnuradio/io_signature.h>
 
+#include <algorithm>
+
 namespace gr {
 namespace mlir_aie {
 
@@ -56,7 +58,7 @@ mlir_aie_cpp_int32_source_1arg_impl::mlir_aie_cpp_int32_source_1arg_impl(
     // set up the buffer objects
     _bo_instr = xrt::bo(_device, _instr_v.size() * sizeof(int),
                           XCL_BO_FLAGS_CACHEABLE, _kernel.group_id(1));
-    _bo_inA = xrt::bo(_device,  1 * sizeof(arg_type),                 // Used for argument-passing (TODO improve)
+    _bo_inA = xrt::bo(_device, source_arg_count * sizeof(arg_type),
                         XRT_BO_FLAGS_HOST_ONLY, _kernel.group_id(3));
     _bo_out =
       xrt::bo(_device,  _VECTOR_SIZE * sizeof(output_type) + _trace_size,
@@ -85,6 +87,7 @@ mlir_aie_cpp_int32_source_1arg_impl::mlir_aie_cpp_int32_source_1arg_impl(
     _run.set_arg(4, _bo_out);
     
     _arg1 = arg1;
+    _arg_values.assign(source_arg_count, _arg1);
 }
 
 /*
@@ -106,7 +109,8 @@ int mlir_aie_cpp_int32_source_1arg_impl::work(int noutput_items,
     int n_chunks = noutput_items / _VECTOR_SIZE;
     
     for (int i = 0; i < n_chunks; i++) {        
-        memcpy(_bufInA, &_arg1, 1 * sizeof(arg_type));
+        std::fill(_arg_values.begin(), _arg_values.end(), _arg1);
+        memcpy(_bufInA, _arg_values.data(), _arg_values.size() * sizeof(arg_type));
         _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
         
         _run.start();
