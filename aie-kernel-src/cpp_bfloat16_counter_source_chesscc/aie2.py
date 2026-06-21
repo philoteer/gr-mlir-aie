@@ -4,7 +4,7 @@
 # See https://llvm.org/LICENSE.txt for license information.
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
-# (c) Copyright 2026 Advanced Micro Devices, Inc. or its affiliates
+# Derived from mlir-aie example structure and adapted for this project.
 import numpy as np
 import ml_dtypes
 
