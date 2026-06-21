@@ -23,6 +23,11 @@ parameters:
   dtype: file_open
   default: 'aie-kernel-src/build/insts.bin'
 
+- id: kernel_name
+  label: kernel_name
+  dtype: string
+  default: 'MLIR_AIE'
+
 - id: VECTOR_SIZE
   label: VECTOR_SIZE
   dtype: int

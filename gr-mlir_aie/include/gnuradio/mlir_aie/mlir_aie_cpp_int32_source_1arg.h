@@ -37,7 +37,7 @@ public:
                      const char* path_insts_bin,
                      const char* kernel_name,
                      int VECTOR_SIZE,
-                     int arg1);
+                     float arg1);
 };
 
 } // namespace mlir_aie
