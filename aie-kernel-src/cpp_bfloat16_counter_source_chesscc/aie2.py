@@ -19,19 +19,21 @@ tensor_size = 4096
 tile_size = tensor_size // 4
 
 # Define tensor types
-step_ty = np.ndarray[(1,), np.dtype[np.float32]]
+step_ty = np.ndarray[(4,), np.dtype[np.float32]]
 tensor_ty = np.ndarray[(tensor_size,), np.dtype[ml_dtypes.bfloat16]]
+
 tile_ty = np.ndarray[(tile_size,), np.dtype[ml_dtypes.bfloat16]]
+step_tile_ty = np.ndarray[(1,), np.dtype[np.float32]]
 
 # External, binary kernel definition
 counter_fn = Kernel(
     "counter_source",
     "counter.o",
-    [step_ty, tile_ty, np.int32],
+    [step_tile_ty, tile_ty, np.int32],
 )
 
 # Input data movement for the scalar step size
-of_step = ObjectFifo(step_ty, name="step")
+of_step = ObjectFifo(step_tile_ty, name="step")
 
 # Output data movement
 of_out = ObjectFifo(tile_ty, name="out")
