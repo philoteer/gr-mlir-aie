@@ -12,9 +12,18 @@ import sys
 from aie.iron import Kernel, ObjectFifo, Program, Runtime, Worker
 from aie.iron.placers import SequentialPlacer
 from aie.iron.controlflow import range_
+from aie.iron.device import NPU1, NPU2
 import aie.iron as iron
 
-dev = iron.get_current_device()
+if len(sys.argv) > 1:
+    if sys.argv[1] == "npu":
+        dev = NPU1()
+    elif sys.argv[1] == "npu2":
+        dev = NPU2()
+    else:
+        raise ValueError(f"Unsupported device: {sys.argv[1]}")
+else:
+    dev = iron.get_current_device()
 
 tensor_size = 4096
 tile_size = tensor_size // 4

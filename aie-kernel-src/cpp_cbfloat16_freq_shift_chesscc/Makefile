@@ -48,13 +48,19 @@ all: build/final.xclbin build/insts.bin
 targetname = frequencyShift
 devicename ?= $(if $(filter 1,$(NPU2)),npu2,npu)
 
+ifeq ($(devicename),npu2)
+KERNEL_CHESSCCWRAP_FLAGS = ${CHESSCCWRAP2P_FLAGS}
+else
+KERNEL_CHESSCCWRAP_FLAGS = ${CHESSCCWRAP2_FLAGS}
+endif
+
 build/aie.mlir: ${srcdir}/aie2.py
 	mkdir -p ${@D}
 	python3 $< ${devicename} > $@
 
 build/freq_shift.o: ${srcdir}/freq_shift.cc
 	mkdir -p ${@D}
-	cd ${@D} && xchesscc_wrapper ${CHESSCCWRAP2_FLAGS} -c $< -o ${@F}
+	cd ${@D} && xchesscc_wrapper ${KERNEL_CHESSCCWRAP_FLAGS} -c $< -o ${@F}
 
 build/final.xclbin: build/aie.mlir build/freq_shift.o
 	mkdir -p ${@D}
