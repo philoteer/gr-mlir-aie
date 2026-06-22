@@ -52,7 +52,7 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
     aie::store_v(pOut, oscillator);
     pOut += kVecFactor;
         
-    aie::accum<caccfloat, vec_factor> tick = aie::mul(oscillator, rotate_factor);
+    aie::accum<caccfloat, kVecFactor> tick = aie::mul(oscillator, rotate_factor);
     oscillator = tick.to_vector<cbfloat16>(0);
     
   }
