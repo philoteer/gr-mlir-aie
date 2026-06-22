@@ -21,10 +21,8 @@ import aie.iron as iron
 if len(sys.argv) > 1:
     if sys.argv[1] == "npu":
         dev = NPU1()
-        print("device set npu1")
     elif sys.argv[1] == "npu2":
         dev = NPU2()
-        print("device set npu2")
     else:
         raise ValueError(f"Unsupported device: {sys.argv[1]}")
 else:
