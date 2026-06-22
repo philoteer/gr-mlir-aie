@@ -7,6 +7,7 @@
 # Derived from mlir-aie example structure and adapted for this project.
 import numpy as np
 import ml_dtypes
+import sys
 
 from aie.iron import Kernel, ObjectFifo, Program, Runtime, Worker
 from aie.iron.placers import SequentialPlacer
