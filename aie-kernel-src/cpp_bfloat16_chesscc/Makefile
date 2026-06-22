@@ -48,13 +48,19 @@ all: build/final.xclbin build/insts.bin
 targetname = vectorScalar
 devicename ?= $(if $(filter 1,$(NPU2)),npu2,npu)
 
+ifeq ($(devicename),npu2)
+KERNEL_CHESSCCWRAP_FLAGS = ${CHESSCCWRAP2P_FLAGS}
+else
+KERNEL_CHESSCCWRAP_FLAGS = ${CHESSCCWRAP2_FLAGS}
+endif
+
 build/aie.mlir: ${srcdir}/aie2_memtile_caching.py
 	mkdir -p ${@D}
 	python3 $< ${devicename} > $@
 	
 build/scale.o: ${srcdir}/scale.cc
 	mkdir -p ${@D}
-	cd ${@D} && xchesscc_wrapper ${CHESSCCWRAP2_FLAGS} -c $< -o ${@F}
+	cd ${@D} && xchesscc_wrapper ${KERNEL_CHESSCCWRAP_FLAGS} -c $< -o ${@F}
 		
 #build/scale.o: ${srcdir}/scale.cc
 #	mkdir -p ${@D}
