@@ -14,6 +14,8 @@
 #include <aie_api/aie_types.hpp>
 
 #define kVecFactor 16
+#define PI 3.14159265358979323846f
+#define HALF_PI 1.57079632679489661923f
 #define TWO_PI 6.28318530717958647692f
 
 static aie::vector<cbfloat16, kVecFactor> oscillator;
@@ -24,6 +26,29 @@ static aie::vector<cbfloat16, kVecFactor> rotate_factor;
 // Track the absolute starting phase for the current invocation
 static float current_phase = 0.0f;
 static float N_mul_phase_step = 0.0f;
+
+static inline float wrap_phase(float phase) {
+  while (phase > PI)
+    phase -= TWO_PI;
+  while (phase < -PI)
+    phase += TWO_PI;
+  return phase;
+}
+
+static inline float sin_minimax_3(float phase) {
+  float x = wrap_phase(phase);
+  if (x > HALF_PI)
+    x = PI - x;
+  else if (x < -HALF_PI)
+    x = -PI - x;
+
+  const float x2 = x * x;
+  return x * (0.999770153f + x2 * (-0.165710071f + x2 * 0.007513054f));
+}
+
+static inline float cos_minimax_3(float phase) {
+  return sin_minimax_3(HALF_PI - phase);
+}
 
 extern "C" {
 
@@ -36,8 +61,8 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
     phase_step = TWO_PI * frequency[0];
     
     cbfloat16 next;
-    next.real = (bfloat16)cosf(kVecFactor * phase_step);
-    next.imag = (bfloat16)sinf(kVecFactor * phase_step);
+    next.real = (bfloat16)cos_minimax_3(kVecFactor * phase_step);
+    next.imag = (bfloat16)sin_minimax_3(kVecFactor * phase_step);
     rotate_factor = aie::broadcast<cbfloat16, kVecFactor>(next);
     
     N_mul_phase_step = N * phase_step; //Assumes N is constant (TODO FIX)
@@ -50,8 +75,8 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
   cbfloat16 oscillator_init[kVecFactor];
   for (int i = 0; i < kVecFactor; i++) {
     float element_phase = current_phase + (i * phase_step);
-    oscillator_init[i].real = (bfloat16)cosf(element_phase);
-    oscillator_init[i].imag = (bfloat16)sinf(element_phase);
+    oscillator_init[i].real = (bfloat16)cos_minimax_3(element_phase);
+    oscillator_init[i].imag = (bfloat16)sin_minimax_3(element_phase);
   }
   oscillator = aie::load_v<kVecFactor>(oscillator_init);
   
