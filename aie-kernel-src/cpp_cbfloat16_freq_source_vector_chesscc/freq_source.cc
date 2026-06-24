@@ -21,11 +21,11 @@
 #define kQScale 32768.0f
 #define kPhaseScale 4294967296.0f
 
-static aie::vector<cint16, kVecFactor> oscillator;
+alignas(64) static aie::vector<cint16, kVecFactor> oscillator;
 static float last_frequency = -99.0f;
 static float phase_step; 
 static uint32_t phase_step_q;
-static aie::vector<cint16, kVecFactor> rotate_factor;
+alignas(64) static aie::vector<cint16, kVecFactor> rotate_factor;
 
 // One full turn is 2^32, so unsigned overflow wraps phase modulo 2*pi.
 static uint32_t current_phase = 0;
@@ -103,7 +103,7 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
   }
   
   // 2. Re-calculate the oscillator vector based on the current phase tracking
-  cint16 oscillator_init[kVecFactor];
+  alignas(32) cint16 oscillator_init[kVecFactor];
   for (int i = 0; i < kVecFactor; i++) {
     float element_phase = phase_q_to_radians(current_phase + (uint32_t)i * phase_step_q);
     oscillator_init[i] = make_q15(cos_minimax_3(element_phase),
