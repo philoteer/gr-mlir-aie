@@ -14,69 +14,62 @@
 #include <aie_api/aie_types.hpp>
 
 #define kVecFactor 16
-#define PI 3.14159265358979323846f
-#define HALF_PI 1.57079632679489661923f
-#define TWO_PI 6.28318530717958647692f
 #define kQShift 15
-#define kQScale 32768.0f
 #define kPhaseScale 4294967296.0f
+#define kQuadrantPhase 0x40000000u
+#define kHalfPiQ30 1686629713
+#define kSinAQ30 1073495352
+#define kSinBQ30 -177929150
+#define kSinCQ30 8067080
 #define OSCILLATOR_RESET_CNT 4
 
 alignas(64) static aie::vector<cint16, kVecFactor> oscillator;
 static float last_frequency = -99.0f;
-static float phase_step; 
 static uint32_t phase_step_q;
 alignas(64) static aie::vector<cint16, kVecFactor> rotate_factor;
 // One full turn is 2^32, so unsigned overflow wraps phase modulo 2*pi.
 static uint32_t current_phase = 0;
 static int osc_cnt = OSCILLATOR_RESET_CNT+1;
 
-static inline float wrap_phase(float phase) {
-  while (phase > PI)
-    phase -= TWO_PI;
-  while (phase < -PI)
-    phase += TWO_PI;
-  return phase;
-}
-
-static inline float sin_minimax_3(float phase) {
-  float x = wrap_phase(phase);
-  if (x > HALF_PI)
-    x = PI - x;
-  else if (x < -HALF_PI)
-    x = -PI - x;
-
-  const float x2 = x * x;
-  return x * (0.999770153f + x2 * (-0.165710071f + x2 * 0.007513054f));
-}
-
-static inline float cos_minimax_3(float phase) {
-  return sin_minimax_3(HALF_PI - phase);
-}
-
 static inline uint32_t frequency_to_phase_step_q(float frequency) {
   float cycles = frequency - floorf(frequency);
   return (uint32_t)(cycles * kPhaseScale);
 }
 
-static inline float phase_q_to_radians(uint32_t phase) {
-  float centered = phase < 0x80000000u ? (float)phase : (float)phase - kPhaseScale;
-  return centered * (TWO_PI / kPhaseScale);
-}
-
-static inline int16_t float_to_q15(float x) {
-  float scaled = x * kQScale;
-  if (scaled > 32767.0f)
+static inline int16_t clamp_q15(int32_t x) {
+  if (x > 32767)
     return 32767;
-  if (scaled < -32768.0f)
+  if (x < -32768)
     return -32768;
-  return (int16_t)(scaled >= 0.0f ? scaled + 0.5f : scaled - 0.5f);
+  return (int16_t)x;
 }
 
-static inline cint16 make_q15(float real, float imag) {
+static inline int16_t sin_first_quadrant_q15(uint32_t phase_q30) {
+  int64_t x = ((int64_t)phase_q30 * kHalfPiQ30 + (1ll << 29)) >> 30;
+  int64_t x2 = (x * x + (1ll << 29)) >> 30;
+  int64_t inner = kSinBQ30 + ((x2 * kSinCQ30 + (1ll << 29)) >> 30);
+  int64_t poly = kSinAQ30 + ((x2 * inner + (1ll << 29)) >> 30);
+  int64_t y = (x * poly + (1ll << 29)) >> 30;
+  return clamp_q15((int32_t)((y + (1 << 14)) >> 15));
+}
+
+static inline int16_t sin_minimax_3(uint32_t phase) {
+  uint32_t quadrant = phase >> 30;
+  uint32_t offset = phase & (kQuadrantPhase - 1);
+  int16_t magnitude = sin_first_quadrant_q15(
+      (quadrant & 1) ? kQuadrantPhase - offset : offset);
+
+  return (quadrant < 2) ? magnitude : (int16_t)-magnitude;
+}
+
+static inline int16_t cos_minimax_3(uint32_t phase) {
+  return sin_minimax_3(phase + kQuadrantPhase);
+}
+
+static inline cint16 make_q15(int16_t real, int16_t imag) {
   cint16 value;
-  value.real = float_to_q15(real);
-  value.imag = float_to_q15(imag);
+  value.real = real;
+  value.imag = imag;
   return value;
 }
 
@@ -88,11 +81,11 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
   // 1. Update frequency-dependent parameters if the frequency changed
   if (last_frequency != frequency[0]) {
     last_frequency = frequency[0];
-    phase_step = TWO_PI * frequency[0];
     phase_step_q = frequency_to_phase_step_q(frequency[0]);
     
-    cint16 next = make_q15(cos_minimax_3(kVecFactor * phase_step),
-                           sin_minimax_3(kVecFactor * phase_step));
+    uint32_t block_phase_step_q = (uint32_t)kVecFactor * phase_step_q;
+    cint16 next = make_q15(cos_minimax_3(block_phase_step_q),
+                           sin_minimax_3(block_phase_step_q));
     rotate_factor = aie::broadcast<cint16, kVecFactor>(next);
   }
   
@@ -101,7 +94,7 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
   {
     alignas(32) cint16 oscillator_init[kVecFactor];
     for (int i = 0; i < kVecFactor; i++) {
-      float element_phase = phase_q_to_radians(current_phase + (uint32_t)i * phase_step_q);
+      uint32_t element_phase = current_phase + (uint32_t)i * phase_step_q;
       oscillator_init[i] = make_q15(cos_minimax_3(element_phase),
                                     sin_minimax_3(element_phase));
     }
