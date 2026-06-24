@@ -80,13 +80,6 @@ static inline cint16 make_q15(float real, float imag) {
   return value;
 }
 
-static inline cbfloat16 q15_to_cbfloat16(cint16 value) {
-  cbfloat16 out;
-  out.real = (bfloat16)((float)value.real / kQScale);
-  out.imag = (bfloat16)((float)value.imag / kQScale);
-  return out;
-}
-
 extern "C" {
 
 void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
