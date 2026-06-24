@@ -19,15 +19,16 @@
 #define TWO_PI 6.28318530717958647692f
 #define kQShift 15
 #define kQScale 32768.0f
+#define kPhaseScale 4294967296.0f
 
 static aie::vector<cint16, kVecFactor> oscillator;
 static float last_frequency = -99.0f;
 static float phase_step; 
+static uint32_t phase_step_q;
 static aie::vector<cint16, kVecFactor> rotate_factor;
 
-// Track the absolute starting phase for the current invocation
-static float current_phase = 0.0f;
-static float N_mul_phase_step = 0.0f;
+// One full turn is 2^32, so unsigned overflow wraps phase modulo 2*pi.
+static uint32_t current_phase = 0;
 
 static inline float wrap_phase(float phase) {
   while (phase > PI)
@@ -50,6 +51,16 @@ static inline float sin_minimax_3(float phase) {
 
 static inline float cos_minimax_3(float phase) {
   return sin_minimax_3(HALF_PI - phase);
+}
+
+static inline uint32_t frequency_to_phase_step_q(float frequency) {
+  float cycles = frequency - floorf(frequency);
+  return (uint32_t)(cycles * kPhaseScale);
+}
+
+static inline float phase_q_to_radians(uint32_t phase) {
+  float centered = phase < 0x80000000u ? (float)phase : (float)phase - kPhaseScale;
+  return centered * (TWO_PI / kPhaseScale);
 }
 
 static inline int16_t float_to_q15(float x) {
@@ -84,21 +95,17 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
   if (last_frequency != frequency[0]) {
     last_frequency = frequency[0];
     phase_step = TWO_PI * frequency[0];
+    phase_step_q = frequency_to_phase_step_q(frequency[0]);
     
     cint16 next = make_q15(cos_minimax_3(kVecFactor * phase_step),
                            sin_minimax_3(kVecFactor * phase_step));
     rotate_factor = aie::broadcast<cint16, kVecFactor>(next);
-    
-    N_mul_phase_step = N * phase_step; //Assumes N is constant (TODO FIX)
-    while (N_mul_phase_step >= TWO_PI) { 
-      N_mul_phase_step  -= TWO_PI;
-    }
   }
   
   // 2. Re-calculate the oscillator vector based on the current phase tracking
   cint16 oscillator_init[kVecFactor];
   for (int i = 0; i < kVecFactor; i++) {
-    float element_phase = current_phase + (i * phase_step);
+    float element_phase = phase_q_to_radians(current_phase + (uint32_t)i * phase_step_q);
     oscillator_init[i] = make_q15(cos_minimax_3(element_phase),
                                   sin_minimax_3(element_phase));
   }
@@ -121,7 +128,6 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
   }
 
   // 4. Track the end-of-execution phase to ensure the next call starts seamlessly
-  current_phase += N_mul_phase_step;
-  while(current_phase >= TWO_PI) current_phase -= TWO_PI;
+  current_phase += (uint32_t)N * phase_step_q;
 }
 }
