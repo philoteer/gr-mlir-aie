@@ -20,15 +20,16 @@
 #define kQShift 15
 #define kQScale 32768.0f
 #define kPhaseScale 4294967296.0f
+#define OSCILLATOR_RESET_CNT 4
 
 alignas(64) static aie::vector<cint16, kVecFactor> oscillator;
 static float last_frequency = -99.0f;
 static float phase_step; 
 static uint32_t phase_step_q;
 alignas(64) static aie::vector<cint16, kVecFactor> rotate_factor;
-
 // One full turn is 2^32, so unsigned overflow wraps phase modulo 2*pi.
 static uint32_t current_phase = 0;
+static int osc_cnt = OSCILLATOR_RESET_CNT+1;
 
 static inline float wrap_phase(float phase) {
   while (phase > PI)
@@ -103,13 +104,17 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
   }
   
   // 2. Re-calculate the oscillator vector based on the current phase tracking
-  alignas(32) cint16 oscillator_init[kVecFactor];
-  for (int i = 0; i < kVecFactor; i++) {
-    float element_phase = phase_q_to_radians(current_phase + (uint32_t)i * phase_step_q);
-    oscillator_init[i] = make_q15(cos_minimax_3(element_phase),
-                                  sin_minimax_3(element_phase));
+  if(osc_cnt >= OSCILLATOR_RESET_CNT)
+  {
+    alignas(32) cint16 oscillator_init[kVecFactor];
+    for (int i = 0; i < kVecFactor; i++) {
+      float element_phase = phase_q_to_radians(current_phase + (uint32_t)i * phase_step_q);
+      oscillator_init[i] = make_q15(cos_minimax_3(element_phase),
+                                    sin_minimax_3(element_phase));
+    }
+    oscillator = aie::load_v<kVecFactor>(oscillator_init);
+    osc_cnt = 0;
   }
-  oscillator = aie::load_v<kVecFactor>(oscillator_init);
   
   // 3. Execute the streaming loop
   AIE_PREPARE_FOR_PIPELINING
@@ -129,5 +134,6 @@ void frequency_source(float *frequency, cbfloat16 *out, int32_t N) {
 
   // 4. Track the end-of-execution phase to ensure the next call starts seamlessly
   current_phase += (uint32_t)N * phase_step_q;
+  osc_cnt++;
 }
 }
