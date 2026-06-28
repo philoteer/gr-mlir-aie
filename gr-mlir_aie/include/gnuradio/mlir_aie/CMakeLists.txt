@@ -19,4 +19,5 @@ install(FILES api.h
     complex64_to_cbfloat.h
     cbfloat_to_complex64.h
     mlire_aie_cpp_int32_to_int16.h
-    mlir_aie_cpp_int32_source_1arg.h DESTINATION include/gnuradio/mlir_aie)
+    mlir_aie_cpp_int32_source_1arg.h
+    mlir_aie_cpp_tagged_int32_to_int32.h DESTINATION include/gnuradio/mlir_aie)
