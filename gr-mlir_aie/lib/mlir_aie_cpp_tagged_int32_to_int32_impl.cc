@@ -149,23 +149,31 @@ int mlir_aie_cpp_tagged_int32_to_int32_impl::general_work(
         _bo_out_meta.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
 
         //TODO FIX (AI-generated, unverified)
+        //for each tile
         for (int tile_idx = 0; tile_idx < _N_TILES; tile_idx++) {
+            
+            //n-th tile's metadata
             const std::int32_t* tile_meta =
                 _bufOutMeta + (tile_idx * _METADATA_WORDS_PER_TILE);
+            
+            //main data, tag len
             int tile_len = tile_meta[0];
-            int tag_count = std::min(tile_meta[1], _MAX_TAGS_PER_TILE);
-            int tile_start = tile_idx * _TILE_SIZE;
+            int tag_count = tile_meta[1];
+            int tile_start = tile_idx * _TILE_SIZE; //tile start position in bufout
 
+            // should not happen IF you wrote the kernel correctly:
             if (tile_len < 0) {
                 tile_len = 0;
             } else if (tile_len > _TILE_SIZE) {
                 tile_len = _TILE_SIZE;
             }
 
+            //copy the main stream
             memcpy(out + total_produced,
                    _bufOut + tile_start,
                    tile_len * sizeof(tagged_output_type));
 
+            //generate tag messages
             const uint64_t tile_abs_start = output_abs_start + total_produced;
             for (int tag_idx = 0; tag_idx < tag_count; tag_idx++) {
                 const int tag_offset = tile_meta[2 + 2 * tag_idx];
