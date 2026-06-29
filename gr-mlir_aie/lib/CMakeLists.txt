@@ -23,7 +23,8 @@ list(APPEND mlir_aie_sources
     cbfloat_to_complex64_impl.cc
     mlire_aie_cpp_int32_to_int16_impl.cc
     mlir_aie_cpp_int32_source_1arg_impl.cc
-    mlir_aie_cpp_tagged_int32_to_int32_impl.cc)
+    mlir_aie_cpp_tagged_int32_to_int32_impl.cc
+    mlir_aie_cpp_80211_magsq_and_div_impl.cc)
 
 set(mlir_aie_sources
     "${mlir_aie_sources}"
