@@ -14,12 +14,10 @@
 namespace gr {
 namespace mlir_aie {
 
-/*! 
- * \brief Run the 802.11 AIE magnitude-squared normalization kernel.
+/*!
+ * \brief <+description of block+>
  * \ingroup mlir_aie
  *
- * Takes a complex float stream and a float magnitude stream, sends them to the
- * AIE kernel as cbfloat16 and bfloat16 buffers, and emits a float stream.
  */
 class MLIR_AIE_API mlir_aie_cpp_80211_magsq_and_div : virtual public gr::block
 {
