@@ -64,15 +64,15 @@ mlir_aie_cpp_80211_magsq_and_div_impl::mlir_aie_cpp_80211_magsq_and_div_impl(
                         XCL_BO_FLAGS_CACHEABLE,
                         _kernel.group_id(1));
     _bo_ac_in = xrt::bo(_device,
-                        _VECTOR_SIZE * sizeof(magsq_aie_complex_type),
+                        _VECTOR_SIZE * sizeof(magsq_complex_input_type),
                         XRT_BO_FLAGS_HOST_ONLY,
                         _kernel.group_id(3));
     _bo_mag_in = xrt::bo(_device,
-                         _VECTOR_SIZE * sizeof(magsq_aie_bfloat_type),
+                         _VECTOR_SIZE * sizeof(magsq_mag_input_type),
                          XRT_BO_FLAGS_HOST_ONLY,
                          _kernel.group_id(3));
     _bo_out = xrt::bo(_device,
-                      _VECTOR_SIZE * sizeof(magsq_aie_bfloat_type) + _trace_size,
+                      _VECTOR_SIZE * sizeof(magsq_output_type) + _trace_size,
                       XRT_BO_FLAGS_HOST_ONLY,
                       _kernel.group_id(3));
 
@@ -81,10 +81,10 @@ mlir_aie_cpp_80211_magsq_and_div_impl::mlir_aie_cpp_80211_magsq_and_div_impl(
     _bufInstr = _bo_instr.map<void*>();
     memcpy(_bufInstr, _instr_v.data(), _instr_v.size() * sizeof(std::uint32_t));
 
-    _bufAcIn = _bo_ac_in.map<magsq_aie_complex_type*>();
-    _bufMagIn = _bo_mag_in.map<magsq_aie_bfloat_type*>();
-    _bufOut = _bo_out.map<magsq_aie_bfloat_type*>();
-    memset(_bufOut, 42, _VECTOR_SIZE * sizeof(magsq_aie_bfloat_type) + _trace_size);
+    _bufAcIn = _bo_ac_in.map<magsq_complex_input_type*>();
+    _bufMagIn = _bo_mag_in.map<magsq_mag_input_type*>();
+    _bufOut = _bo_out.map<magsq_output_type*>();
+    memset(_bufOut, 42, _VECTOR_SIZE * sizeof(magsq_output_type) + _trace_size);
 
     _bo_out.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     _bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
@@ -133,10 +133,8 @@ int mlir_aie_cpp_80211_magsq_and_div_impl::general_work(
         const magsq_mag_input_type* mag_ptr = mag_in + (i * _VECTOR_SIZE);
         magsq_output_type* out_ptr = out + (i * _VECTOR_SIZE);
 
-        for (int j = 0; j < _VECTOR_SIZE; j++) {
-            _bufAcIn[j] = complex_to_cbfloat(ac_ptr[j]);
-            _bufMagIn[j] = float_to_bfloat16(mag_ptr[j]);
-        }
+        memcpy(_bufAcIn, ac_ptr, _VECTOR_SIZE * sizeof(magsq_complex_input_type));
+        memcpy(_bufMagIn, mag_ptr, _VECTOR_SIZE * sizeof(magsq_mag_input_type));
 
         _bo_ac_in.sync(XCL_BO_SYNC_BO_TO_DEVICE);
         _bo_mag_in.sync(XCL_BO_SYNC_BO_TO_DEVICE);
@@ -145,9 +143,7 @@ int mlir_aie_cpp_80211_magsq_and_div_impl::general_work(
         _run.wait();
 
         _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
-        for (int j = 0; j < _VECTOR_SIZE; j++) {
-            out_ptr[j] = bfloat16_to_float(_bufOut[j]);
-        }
+        memcpy(out_ptr, _bufOut, _VECTOR_SIZE * sizeof(magsq_output_type));
     }
 
     const int processed_items = n_chunks * _VECTOR_SIZE;

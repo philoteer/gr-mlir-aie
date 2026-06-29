@@ -37,16 +37,16 @@ parameters:
 inputs:
 - label: ac_in
   domain: stream
-  dtype: complex
+  dtype: int
 
 - label: mag_in
   domain: stream
-  dtype: float
+  dtype: short
 
 outputs:
 - label: out
   domain: stream
-  dtype: float
+  dtype: short
 
 #  'file_format' specifies the version of the GRC yml format used in the file
 #  and should usually not be changed.

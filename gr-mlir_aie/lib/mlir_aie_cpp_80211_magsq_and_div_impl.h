@@ -22,12 +22,9 @@
 namespace gr {
 namespace mlir_aie {
 
-using magsq_complex_input_type = gr_complex;
-using magsq_mag_input_type = float;
-using magsq_output_type = float;
-
-using magsq_aie_complex_type = std::uint32_t;
-using magsq_aie_bfloat_type = std::uint16_t;
+using magsq_complex_input_type = std::int32_t;
+using magsq_mag_input_type = std::int16_t;
+using magsq_output_type = std::int16_t;
 
 class mlir_aie_cpp_80211_magsq_and_div_impl : public mlir_aie_cpp_80211_magsq_and_div
 {
@@ -44,31 +41,10 @@ private:
     xrt::device _device;
     xrt::run _run;
 
-    magsq_aie_complex_type* _bufAcIn;
-    magsq_aie_bfloat_type* _bufMagIn;
-    magsq_aie_bfloat_type* _bufOut;
+    magsq_complex_input_type* _bufAcIn;
+    magsq_mag_input_type* _bufMagIn;
+    magsq_output_type* _bufOut;
     void* _bufInstr;
-
-    static std::uint16_t float_to_bfloat16(float f)
-    {
-        std::uint32_t x;
-        std::memcpy(&x, &f, sizeof(x));
-        return static_cast<std::uint16_t>(x >> 16);
-    }
-
-    static float bfloat16_to_float(std::uint16_t bf)
-    {
-        std::uint32_t x = static_cast<std::uint32_t>(bf) << 16;
-        float f;
-        std::memcpy(&f, &x, sizeof(f));
-        return f;
-    }
-
-    static std::uint32_t complex_to_cbfloat(gr_complex c)
-    {
-        return (static_cast<std::uint32_t>(float_to_bfloat16(c.imag())) << 16) |
-               float_to_bfloat16(c.real());
-    }
 
 public:
     mlir_aie_cpp_80211_magsq_and_div_impl(const char* path_xclbin,
