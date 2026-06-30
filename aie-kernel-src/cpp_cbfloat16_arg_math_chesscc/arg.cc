@@ -15,6 +15,27 @@
 #include <aie_api/aie.hpp>
 #include <aie_api/aie_types.hpp>
 
+static inline float atan2_estimate(float y, float x) {
+    if (x == 0.0f && y == 0.0f) {
+        return 0.0f;
+    }
+
+    const float pi_4 = 0.78539816339744830962f;
+    const float three_pi_4 = 2.35619449019234492885f;
+    float abs_y = y < 0.0f ? -y : y;
+    float angle;
+
+    if (x < 0.0f) {
+        float r = (x + abs_y) / (abs_y - x);
+        angle = three_pi_4 + (0.1963f * r * r - 0.9817f) * r;
+    } else {
+        float r = (x - abs_y) / (x + abs_y);
+        angle = pi_4 + (0.1963f * r * r - 0.9817f) * r;
+    }
+
+    return y < 0.0f ? -angle : angle;
+}
+
 extern "C" {
 
 void complex_to_arg(cbfloat16 *a, bfloat16 *c, int32_t N) {
@@ -26,7 +47,8 @@ void complex_to_arg(cbfloat16 *a, bfloat16 *c, int32_t N) {
   for (int32_t i = 0; i < N; i++) {
     const float real = (float)pA[i].real;
     const float imag = (float)pA[i].imag;
-    pC[i] = (bfloat16)atan2f(imag, real);
+    //pC[i] = (bfloat16)atan2f(imag, real);
+    pC[i] = (bfloat16)atan2_estimate(imag, real);
   }
 }
 
