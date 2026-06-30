@@ -27,10 +27,12 @@ static inline float atan2_estimate(float y, float x) {
 
     if (x < 0.0f) {
         float r = (x + abs_y) / (abs_y - x);
-        angle = three_pi_4 + (0.1963f * r * r - 0.9817f) * r;
+        const float r2 = r * r;
+        angle = three_pi_4 + ((-0.0775571848f * r2 + 0.2873136883f) * r2 - 0.9951546670f) * r;
     } else {
         float r = (x - abs_y) / (x + abs_y);
-        angle = pi_4 + (0.1963f * r * r - 0.9817f) * r;
+        const float r2 = r * r;
+        angle = pi_4 + ((-0.0775571848f * r2 + 0.2873136883f) * r2 - 0.9951546670f) * r;
     }
 
     return y < 0.0f ? -angle : angle;
