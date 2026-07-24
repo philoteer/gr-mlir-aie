@@ -40,3 +40,4 @@ GR_ADD_TEST(qa_mlir_aie_python_uint8 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE
 GR_ADD_TEST(qa_mlir_aie_python_bfloat16 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mlir_aie_python_bfloat16.py)
 GR_ADD_TEST(qa_mlir_aie_cpp_int16 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_mlir_aie_cpp_int16.py)
 GR_ADD_TEST(qa_float32_to_bfloat16 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_float32_to_bfloat16.py)
+GR_ADD_TEST(qa_complex64_to_cint16 ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/qa_complex64_to_cint16.py)
