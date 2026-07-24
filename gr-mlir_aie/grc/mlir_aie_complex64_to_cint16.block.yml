@@ -4,12 +4,18 @@ category: '[mlir_aie]'
 
 templates:
   imports: from gnuradio import mlir_aie
-  make: mlir_aie.complex64_to_cint16()
+  make: mlir_aie.complex64_to_cint16(${safe})
 
 documentation: |-
-  Converts complex float samples to packed XDNA cint16 samples. Each component
-  is rounded and saturated to signed Q1.15. Real occupies bits 15:0 and
-  imaginary occupies bits 31:16.
+  Converts complex float samples to packed XDNA cint16 samples. Real occupies
+  bits 15:0 and imaginary occupies bits 31:16. Unsafe mode assumes all inputs
+  are in range and truncates toward zero. Safe mode rounds and saturates.
+
+parameters:
+- id: safe
+  label: Safe conversion
+  dtype: bool
+  default: 'False'
 
 inputs:
 -   label: in

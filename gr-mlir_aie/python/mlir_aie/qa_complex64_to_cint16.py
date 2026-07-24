@@ -25,10 +25,35 @@ class qa_complex64_to_cint16(gr_unittest.TestCase):
     def tearDown(self):
         self.tb = None
 
-    def test_q15_conversion_and_interleaving(self):
+    def run_converter(self, samples, safe=False):
+        source = blocks.vector_source_c(samples, False)
+        converter = mlir_aie.complex64_to_cint16(safe)
+        sink = blocks.vector_sink_i()
+        self.tb.connect(source, converter, sink)
+        self.tb.run()
+        return tuple(sink.data())
+
+    def test_unsafe_q15_conversion_and_interleaving(self):
         samples = (
             0j,
             complex(0.5, -0.5),
+            complex(0.1, -0.1),
+            complex(0.25, 0.75),
+        )
+        expected = (
+            packed_cint16(0, 0),
+            packed_cint16(16384, -16384),
+            packed_cint16(3276, -3276),
+            packed_cint16(8192, 24576),
+        )
+
+        self.assertEqual(expected, self.run_converter(samples))
+
+    def test_safe_q15_conversion_and_interleaving(self):
+        samples = (
+            0j,
+            complex(0.5, -0.5),
+            complex(0.1, -0.1),
             complex(1.0, -1.0),
             complex(2.0, -2.0),
             complex(0.25, 0.75),
@@ -37,19 +62,14 @@ class qa_complex64_to_cint16(gr_unittest.TestCase):
         expected = (
             packed_cint16(0, 0),
             packed_cint16(16384, -16384),
+            packed_cint16(3277, -3277),
             packed_cint16(32767, -32768),
             packed_cint16(32767, -32768),
             packed_cint16(8192, 24576),
             packed_cint16(0, 0),
         )
 
-        source = blocks.vector_source_c(samples, False)
-        converter = mlir_aie.complex64_to_cint16()
-        sink = blocks.vector_sink_i()
-        self.tb.connect(source, converter, sink)
-        self.tb.run()
-
-        self.assertEqual(expected, tuple(sink.data()))
+        self.assertEqual(expected, self.run_converter(samples, safe=True))
 
 
 if __name__ == "__main__":

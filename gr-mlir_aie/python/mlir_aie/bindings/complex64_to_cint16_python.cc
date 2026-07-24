@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(complex64_to_cint16.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(6bbf04fbd17f6a8cdbdb847be8ad89aa)                     */
+/* BINDTOOL_HEADER_FILE_HASH(194d7bca98816ab9b7fb73184cfcf601)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,7 +37,8 @@ void bind_complex64_to_cint16(py::module& m)
         std::shared_ptr<complex64_to_cint16>>(m, "complex64_to_cint16", D(complex64_to_cint16))
 
         .def(py::init(&complex64_to_cint16::make),
-           D(complex64_to_cint16,make)
+           D(complex64_to_cint16,make),
+           py::arg("safe") = false
         )
         
 
@@ -49,8 +50,6 @@ void bind_complex64_to_cint16(py::module& m)
 
 
 }
-
-
 
 
 
