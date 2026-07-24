@@ -36,7 +36,8 @@ list(APPEND mlir_aie_python_files
     mlire_aie_cpp_int32_to_int16_python.cc
     mlir_aie_cpp_int32_source_1arg_python.cc
     mlir_aie_cpp_tagged_int32_to_int32_python.cc
-    mlir_aie_cpp_80211_magsq_and_div_python.cc python_bindings.cc)
+    mlir_aie_cpp_80211_magsq_and_div_python.cc
+    complex64_to_cint16_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(mlir_aie ../../.. gr::mlir_aie "${mlir_aie_python_files}")
 
