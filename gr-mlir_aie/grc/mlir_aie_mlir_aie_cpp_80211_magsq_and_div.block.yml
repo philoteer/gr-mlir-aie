@@ -41,7 +41,7 @@ inputs:
 
 - label: mag_in
   domain: stream
-  dtype: short
+  dtype: int
 
 outputs:
 - label: out
