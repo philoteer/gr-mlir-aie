@@ -32,7 +32,7 @@ public:
      * class. mlir_aie::complex64_to_cint32::make is the public interface for
      * creating new instances.
      */
-    static sptr make();
+    static sptr make(unsigned int integer_bits, unsigned int fractional_bits, bool safe = false);
 };
 
 } // namespace mlir_aie

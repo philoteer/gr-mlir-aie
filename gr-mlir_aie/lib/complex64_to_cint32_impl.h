@@ -16,10 +16,11 @@ namespace mlir_aie {
 class complex64_to_cint32_impl : public complex64_to_cint32
 {
 private:
-    // Nothing to declare in this block.
+    const float d_scale;
+    const bool d_safe;
 
 public:
-    complex64_to_cint32_impl();
+    complex64_to_cint32_impl(unsigned int integer_bits, unsigned int fractional_bits, bool safe);
     ~complex64_to_cint32_impl();
 
     // Where all the action really happens
