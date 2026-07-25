@@ -37,6 +37,7 @@ namespace py = pybind11;
     void bind_float32_to_Q15(py::module& m);
     void bind_cint16_to_complex64(py::module& m);
     void bind_Q15_to_float32(py::module& m);
+    void bind_cint32_to_complex64(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -81,5 +82,6 @@ PYBIND11_MODULE(mlir_aie_python, m)
     bind_float32_to_Q15(m);
     bind_cint16_to_complex64(m);
     bind_Q15_to_float32(m);
+    bind_cint32_to_complex64(m);
     // ) END BINDING_FUNCTION_CALLS
 }

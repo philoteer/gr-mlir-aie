@@ -28,7 +28,8 @@ list(APPEND mlir_aie_sources
     complex64_to_cint16_impl.cc
     float32_to_Q15_impl.cc
     cint16_to_complex64_impl.cc
-    Q15_to_float32_impl.cc)
+    Q15_to_float32_impl.cc
+    cint32_to_complex64_impl.cc)
 
 set(mlir_aie_sources
     "${mlir_aie_sources}"
