@@ -24,4 +24,5 @@ install(FILES
     mlir_aie_mlir_aie_cpp_80211_magsq_and_div.block.yml
     mlir_aie_complex64_to_cint16.block.yml
     mlir_aie_float32_to_Q15.block.yml
-    mlir_aie_cint16_to_complex64.block.yml DESTINATION share/gnuradio/grc/blocks)
+    mlir_aie_cint16_to_complex64.block.yml
+    mlir_aie_Q15_to_float32.block.yml DESTINATION share/gnuradio/grc/blocks)
