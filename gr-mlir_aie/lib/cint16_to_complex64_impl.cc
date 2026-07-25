@@ -28,7 +28,11 @@ float q15_to_float(std::uint32_t value)
 
 output_type cint16_to_complex(input_type value)
 {
-    // XDNA cint16 stores the real component first, followed by imaginary.
+    // On two's-complement hosts, this can instead use a direct signed cast:
+    // return output_type(static_cast<float>(static_cast<std::int16_t>(value)) *
+    //                        (1.0F / 32768.0F),
+    //                    static_cast<float>(static_cast<std::int16_t>(value >> 16)) *
+    //                        (1.0F / 32768.0F));
     return output_type(q15_to_float(value), q15_to_float(value >> 16));
 }
 
