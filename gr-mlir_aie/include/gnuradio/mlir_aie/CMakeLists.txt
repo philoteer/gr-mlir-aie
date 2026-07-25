@@ -23,4 +23,5 @@ install(FILES api.h
     mlir_aie_cpp_tagged_int32_to_int32.h
     mlir_aie_cpp_80211_magsq_and_div.h
     complex64_to_cint16.h
-    float32_to_Q15.h DESTINATION include/gnuradio/mlir_aie)
+    float32_to_Q15.h
+    cint16_to_complex64.h DESTINATION include/gnuradio/mlir_aie)
