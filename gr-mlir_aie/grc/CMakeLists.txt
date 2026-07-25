@@ -29,4 +29,5 @@ install(FILES
     mlir_aie_cint32_to_complex64.block.yml
     mlir_aie_int32_Q_to_float32.block.yml
     mlir_aie_float32_to_int32_Q.block.yml
-    mlir_aie_complex64_to_cint32.block.yml DESTINATION share/gnuradio/grc/blocks)
+    mlir_aie_complex64_to_cint32.block.yml
+    mlir_aie_mlir_aie_cpp_int32_to_int64.block.yml DESTINATION share/gnuradio/grc/blocks)

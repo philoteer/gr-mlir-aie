@@ -44,7 +44,8 @@ list(APPEND mlir_aie_python_files
     cint32_to_complex64_python.cc
     int32_Q_to_float32_python.cc
     float32_to_int32_Q_python.cc
-    complex64_to_cint32_python.cc python_bindings.cc)
+    complex64_to_cint32_python.cc
+    mlir_aie_cpp_int32_to_int64_python.cc python_bindings.cc)
 
 gr_pybind_make_oot(mlir_aie ../../.. gr::mlir_aie "${mlir_aie_python_files}")
 
