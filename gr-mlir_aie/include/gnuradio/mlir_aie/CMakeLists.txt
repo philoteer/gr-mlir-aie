@@ -26,4 +26,5 @@ install(FILES api.h
     float32_to_Q15.h
     cint16_to_complex64.h
     Q15_to_float32.h
-    cint32_to_complex64.h DESTINATION include/gnuradio/mlir_aie)
+    cint32_to_complex64.h
+    int32_Q_to_float32.h DESTINATION include/gnuradio/mlir_aie)
