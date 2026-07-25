@@ -22,7 +22,7 @@
 namespace gr {
 namespace mlir_aie {
 
-using magsq_complex_input_type = std::int32_t;
+using magsq_complex_input_type = std::int64_t;
 using magsq_mag_input_type = std::int32_t;
 using magsq_output_type = std::int16_t;
 
