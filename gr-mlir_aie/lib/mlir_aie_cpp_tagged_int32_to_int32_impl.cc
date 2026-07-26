@@ -177,10 +177,8 @@ int mlir_aie_cpp_tagged_int32_to_int32_impl::general_work(
             const uint64_t tile_abs_start = output_abs_start + total_produced;
             for (int tag_idx = 0; tag_idx < tag_count; tag_idx++) {
                 const int tag_offset = tile_meta[2 + 2 * tag_idx];
-                const std::uint32_t tag_bits =
-                    static_cast<std::uint32_t>(tile_meta[3 + 2 * tag_idx]);
-                float tag_value;
-                memcpy(&tag_value, &tag_bits, sizeof(tag_value));
+                const double tag_value =
+                    static_cast<double>(tile_meta[3 + 2 * tag_idx]) / (std::int64_t{1} << 29);
 
                 if (0 <= tag_offset && tag_offset < tile_len) {
                     add_item_tag(0,
