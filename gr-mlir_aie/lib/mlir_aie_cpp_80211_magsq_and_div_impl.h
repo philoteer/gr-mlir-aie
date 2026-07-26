@@ -24,7 +24,7 @@ namespace mlir_aie {
 
 using magsq_complex_input_type = std::int64_t;
 using magsq_mag_input_type = std::int32_t;
-using magsq_output_type = std::int16_t;
+using magsq_output_type = std::int8_t;
 
 class mlir_aie_cpp_80211_magsq_and_div_impl : public mlir_aie_cpp_80211_magsq_and_div
 {
