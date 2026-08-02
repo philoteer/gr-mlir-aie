@@ -54,6 +54,8 @@ gr_pybind_make_oot(mlir_aie ../../.. gr::mlir_aie "${mlir_aie_python_files}")
 add_custom_command(
     TARGET mlir_aie_python
     POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory
+            ${PROJECT_BINARY_DIR}/test_modules/gnuradio/mlir_aie
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:mlir_aie_python>
             ${PROJECT_BINARY_DIR}/test_modules/gnuradio/mlir_aie/)
 

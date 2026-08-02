@@ -13,8 +13,8 @@
 /* If manual edits are made, the following tags should be modified accordingly.    */
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
-/* BINDTOOL_HEADER_FILE(mlir_aie_cpp_sync_long_test.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(c15a2206df8c31878b5fecc882840897)                     */
+/* BINDTOOL_HEADER_FILE(mlir_aie_cpp_sync_long_test.h) */
+/* BINDTOOL_HEADER_FILE_HASH(a82a8e5e7d213ef088a52d494a864eb6)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -30,30 +30,22 @@ namespace py = pybind11;
 void bind_mlir_aie_cpp_sync_long_test(py::module& m)
 {
 
-    using mlir_aie_cpp_sync_long_test    = gr::mlir_aie::mlir_aie_cpp_sync_long_test;
+    using mlir_aie_cpp_sync_long_test = gr::mlir_aie::mlir_aie_cpp_sync_long_test;
 
 
-    py::class_<mlir_aie_cpp_sync_long_test, gr::block, gr::basic_block,
-        std::shared_ptr<mlir_aie_cpp_sync_long_test>>(m, "mlir_aie_cpp_sync_long_test", D(mlir_aie_cpp_sync_long_test))
+    py::class_<mlir_aie_cpp_sync_long_test,
+               gr::block,
+               gr::basic_block,
+               std::shared_ptr<mlir_aie_cpp_sync_long_test>>(
+        m, "mlir_aie_cpp_sync_long_test", D(mlir_aie_cpp_sync_long_test))
 
         .def(py::init(&mlir_aie_cpp_sync_long_test::make),
-           D(mlir_aie_cpp_sync_long_test,make)
-        )
-        
-
+             D(mlir_aie_cpp_sync_long_test, make),
+             py::arg("path_xclbin") = "build/final.xclbin",
+             py::arg("path_insts_bin") = "build/insts.bin",
+             py::arg("kernel_name") = "MLIR_AIE",
+             py::arg("VECTOR_SIZE") = 4096)
 
 
         ;
-
-
-
-
 }
-
-
-
-
-
-
-
-
