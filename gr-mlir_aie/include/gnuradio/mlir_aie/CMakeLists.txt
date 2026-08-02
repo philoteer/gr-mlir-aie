@@ -30,4 +30,5 @@ install(FILES api.h
     int32_Q_to_float32.h
     float32_to_int32_Q.h
     complex64_to_cint32.h
-    mlir_aie_cpp_int32_to_int64.h DESTINATION include/gnuradio/mlir_aie)
+    mlir_aie_cpp_int32_to_int64.h
+    mlir_aie_cpp_sync_long_test.h DESTINATION include/gnuradio/mlir_aie)
