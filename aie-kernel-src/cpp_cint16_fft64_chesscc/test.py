@@ -122,7 +122,7 @@ class test(gr.top_block, Qt.QWidget):
         self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
         self.mlir_aie_mlir_aie_cpp_int32_to_int64_0 = mlir_aie.mlir_aie_cpp_int32_to_int64('build/final.xclbin', 'build/insts.bin', 'MLIR_AIE', 4096)
         self.mlir_aie_complex64_to_cint16_0 = mlir_aie.complex64_to_cint16(False)
-        self.mlir_aie_cint32_to_complex64_0 = mlir_aie.cint32_to_complex64(15, 16)
+        self.mlir_aie_cint32_to_complex64_0 = mlir_aie.cint32_to_complex64(16, 15)
         self.fft_vxx_0 = fft.fft_vcc(fftlen, True, window.rectangular(fftlen), True, 1)
         self.blocks_vector_to_stream_0 = blocks.vector_to_stream(gr.sizeof_gr_complex*1, fftlen)
         self.blocks_stream_to_vector_0 = blocks.stream_to_vector(gr.sizeof_gr_complex*1, fftlen)

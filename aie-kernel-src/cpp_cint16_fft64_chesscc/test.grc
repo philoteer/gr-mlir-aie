@@ -143,8 +143,8 @@ blocks:
     affinity: ''
     alias: ''
     comment: ''
-    fractional_bits: '16'
-    integer_bits: '15'
+    fractional_bits: '15'
+    integer_bits: '16'
     maxoutbuf: '0'
     minoutbuf: '0'
   states:
