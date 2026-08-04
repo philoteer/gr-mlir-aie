@@ -27,7 +27,7 @@ using fft_output_type = std::int64_t;
 class mlir_aie_cpp_fft_test_impl : public mlir_aie_cpp_fft_test
 {
 private:
-    static constexpr int _MAX_TAGS_PER_TILE = 7;
+    static constexpr int _MAX_TAGS_PER_TILE = 31;
     static constexpr int _N_TILES = 4;
     static constexpr int _METADATA_WORDS_PER_TILE = 2 + 2 * _MAX_TAGS_PER_TILE;
 
