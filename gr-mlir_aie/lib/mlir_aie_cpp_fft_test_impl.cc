@@ -36,15 +36,10 @@ mlir_aie_cpp_fft_test_impl::mlir_aie_cpp_fft_test_impl(const char* path_xclbin,
                 gr::io_signature::make(1, 1, sizeof(fft_output_type))),
       _VECTOR_SIZE(VECTOR_SIZE),
       _TILE_SIZE(VECTOR_SIZE / _N_TILES),
-      _IN_TILE_SIZE(_TILE_SIZE + _DELAY_SAMPLES),
-      _IN_VECTOR_SIZE(_IN_TILE_SIZE * _N_TILES),
-      _opcode_run(3),
-      _delay_history(_DELAY_SAMPLES, 0)
+      _opcode_run(3)
 {
-    if (_VECTOR_SIZE <= 0 || _VECTOR_SIZE % _N_TILES != 0 ||
-        _TILE_SIZE < _DELAY_SAMPLES) {
-        throw std::invalid_argument("VECTOR_SIZE must be a positive multiple of 4 with "
-                                    "at least 320 samples per tile");
+    if (_VECTOR_SIZE <= 0 || _VECTOR_SIZE % _N_TILES != 0) {
+        throw std::invalid_argument("VECTOR_SIZE must be a positive multiple of 4");
     }
 
     set_tag_propagation_policy(TPP_DONT);
@@ -58,7 +53,7 @@ mlir_aie_cpp_fft_test_impl::mlir_aie_cpp_fft_test_impl(const char* path_xclbin,
                         XCL_BO_FLAGS_CACHEABLE,
                         _kernel.group_id(1));
     _bo_in = xrt::bo(_device,
-                     _IN_VECTOR_SIZE * sizeof(fft_input_type),
+                     _VECTOR_SIZE * sizeof(fft_input_type),
                      XRT_BO_FLAGS_HOST_ONLY,
                      _kernel.group_id(3));
     _bo_in_meta = xrt::bo(_device,
@@ -81,7 +76,7 @@ mlir_aie_cpp_fft_test_impl::mlir_aie_cpp_fft_test_impl(const char* path_xclbin,
     _buf_out = _bo_out.map<fft_output_type*>();
     _buf_out_meta = _bo_out_meta.map<std::int32_t*>();
 
-    std::memset(_buf_in, 0, _IN_VECTOR_SIZE * sizeof(fft_input_type));
+    std::memset(_buf_in, 0, _VECTOR_SIZE * sizeof(fft_input_type));
     std::memset(
         _buf_in_meta, 0, _N_TILES * _METADATA_WORDS_PER_TILE * sizeof(std::int32_t));
     std::memset(_buf_out, 0, _VECTOR_SIZE * sizeof(fft_output_type));
@@ -138,14 +133,9 @@ int mlir_aie_cpp_fft_test_impl::general_work(int noutput_items,
         for (int tile_idx = 0; tile_idx < _N_TILES; ++tile_idx) {
             const int src_start = chunk_start + tile_idx * _TILE_SIZE;
             const int src_end = src_start + _TILE_SIZE;
-            const int dst_start = tile_idx * _IN_TILE_SIZE + _DELAY_SAMPLES;
+            const int dst_start = tile_idx * _TILE_SIZE;
 
-            std::copy(_delay_history.begin(),
-                      _delay_history.end(),
-                      _buf_in + dst_start - _DELAY_SAMPLES);
             std::copy(in + src_start, in + src_end, _buf_in + dst_start);
-            std::copy(
-                in + src_end - _DELAY_SAMPLES, in + src_end, _delay_history.begin());
 
             auto* tile_meta = _buf_in_meta + tile_idx * _METADATA_WORDS_PER_TILE;
             const uint64_t tile_abs_start = chunk_abs_start + tile_idx * _TILE_SIZE;

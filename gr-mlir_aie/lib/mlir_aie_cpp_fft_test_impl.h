@@ -30,17 +30,13 @@ private:
     static constexpr int _MAX_TAGS_PER_TILE = 7;
     static constexpr int _N_TILES = 4;
     static constexpr int _METADATA_WORDS_PER_TILE = 2 + 2 * _MAX_TAGS_PER_TILE;
-    static constexpr int _DELAY_SAMPLES = 320;
 
     int _VECTOR_SIZE;
     int _TILE_SIZE;
-    int _IN_TILE_SIZE;
-    int _IN_VECTOR_SIZE;
     unsigned int _opcode_run;
     xrt::kernel _kernel;
     xrt::bo _bo_instr, _bo_in, _bo_in_meta, _bo_out, _bo_out_meta;
     std::vector<uint32_t> _instr_v;
-    std::vector<fft_input_type> _delay_history;
     xrt::device _device;
     xrt::run _run;
 
