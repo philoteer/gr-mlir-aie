@@ -15,7 +15,7 @@ namespace gr {
 namespace mlir_aie {
 
 /*!
- * \brief <+description of block+>
+ * \brief Run the MLIR-AIE FFT kernel on tagged int32 samples.
  * \ingroup mlir_aie
  *
  */
@@ -32,7 +32,10 @@ public:
      * class. mlir_aie::mlir_aie_cpp_fft_test::make is the public interface for
      * creating new instances.
      */
-    static sptr make();
+    static sptr make(const char* path_xclbin,
+                     const char* path_insts_bin,
+                     const char* kernel_name,
+                     int VECTOR_SIZE);
 };
 
 } // namespace mlir_aie
