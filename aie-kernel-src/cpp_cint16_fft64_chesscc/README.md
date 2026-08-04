@@ -13,5 +13,15 @@ overflow that a full-scale coherent input would cause in `cint16`.
 The `count` argument is the number of complex samples and must be a multiple of
 64. Each consecutive group of 64 samples is transformed independently.
 
+`fft64_twiddles.h` is generated deterministically from the staged-FFT formula:
+
+```sh
+python3 generate_twiddles.py > fft64_twiddles.h
+```
+
+The generator scales each complex component by 32768, truncates toward zero,
+and saturates to the signed 16-bit range. It also emits radix-4 tables in the
+API-required `T2`, `T1`, `T3` argument order.
+
 Build with `make` and run on hardware with `make test`. Set `NPU2=1` to target
 NPU2 instead of NPU1.

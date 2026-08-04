@@ -20,7 +20,7 @@ build/aie.mlir: ${srcdir}/aie2.py
 	mkdir -p ${@D}
 	python3 $< ${devicename} > $@
 
-build/fft64.o: ${srcdir}/fft64.cc
+build/fft64.o: ${srcdir}/fft64.cc ${srcdir}/fft64_twiddles.h
 	mkdir -p ${@D}
 ifeq ($(devicename),npu)
 	cd ${@D} && xchesscc_wrapper ${CHESSCCWRAP2_FLAGS} -c $< -o ${@F}
