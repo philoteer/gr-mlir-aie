@@ -7,6 +7,7 @@
 namespace {
 
 constexpr unsigned kFftSize = 64;
+constexpr unsigned kVectorSize = 8;
 constexpr unsigned kTwiddleShift = 15;
 constexpr unsigned kStageShift = 15;
 
@@ -65,9 +66,11 @@ void fft64_cint16(const cint16 *__restrict input,
                              bins);
 
     // fftshift: place negative frequencies before non-negative frequencies.
-    for (unsigned i = 0; i < kFftSize / 2; ++i) {
-      output[frame + i] = bins[i + kFftSize / 2];
-      output[frame + i + kFftSize / 2] = bins[i];
+    for (unsigned i = 0; i < kFftSize / 2; i += kVectorSize) {
+      aie::store_v(output + frame + i,
+                   aie::load_v<kVectorSize>(bins + i + kFftSize / 2));
+      aie::store_v(output + frame + i + kFftSize / 2,
+                   aie::load_v<kVectorSize>(bins + i));
     }
   }
 }
