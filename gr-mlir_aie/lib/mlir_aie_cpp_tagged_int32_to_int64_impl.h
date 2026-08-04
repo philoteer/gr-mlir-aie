@@ -10,16 +10,50 @@
 
 #include <gnuradio/mlir_aie/mlir_aie_cpp_tagged_int32_to_int64.h>
 
+#include "runtime_lib/test_lib/test_utils.h"
+#include "xrt/xrt_bo.h"
+#include "xrt/xrt_device.h"
+#include "xrt/xrt_kernel.h"
+
+#include <cstdint>
+#include <vector>
+
 namespace gr {
 namespace mlir_aie {
+
+using tagged_int64_input_type = std::int32_t;
+using tagged_int64_output_type = std::int64_t;
 
 class mlir_aie_cpp_tagged_int32_to_int64_impl : public mlir_aie_cpp_tagged_int32_to_int64
 {
 private:
-    // Nothing to declare in this block.
+    static constexpr int _MAX_TAGS_PER_TILE = 7;
+    static constexpr int _N_TILES = 4;
+    static constexpr int _METADATA_WORDS_PER_TILE = 2 + 2 * _MAX_TAGS_PER_TILE;
+
+    const char* _path_xclbin;
+    const char* _path_insts_bin;
+    int _VECTOR_SIZE;
+    int _TILE_SIZE;
+    const char* _kernel_name;
+    int _trace_size;
+    unsigned int _opcode_run;
+    xrt::kernel _kernel;
+    xrt::bo _bo_instr, _bo_inA, _bo_out, _bo_out_meta;
+    std::vector<uint32_t> _instr_v;
+    xrt::device _device;
+    xrt::run _run;
+
+    tagged_int64_input_type* _bufInA;
+    tagged_int64_output_type* _bufOut;
+    std::int32_t* _bufOutMeta;
+    void* bufInstr;
 
 public:
-    mlir_aie_cpp_tagged_int32_to_int64_impl();
+    mlir_aie_cpp_tagged_int32_to_int64_impl(const char* path_xclbin,
+                                            const char* path_insts_bin,
+                                            const char* kernel_name,
+                                            int VECTOR_SIZE);
     ~mlir_aie_cpp_tagged_int32_to_int64_impl();
 
     // Where all the action really happens
