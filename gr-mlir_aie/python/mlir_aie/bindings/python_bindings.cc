@@ -44,6 +44,7 @@ namespace py = pybind11;
     void bind_mlir_aie_cpp_int32_to_int64(py::module& m);
     void bind_mlir_aie_cpp_sync_long_test(py::module& m);
     void bind_mlir_aie_cpp_tagged_int32_to_int64(py::module& m);
+    void bind_mlir_aie_cpp_fft_test(py::module& m);
 // ) END BINDING_FUNCTION_PROTOTYPES
 
 
@@ -95,5 +96,6 @@ PYBIND11_MODULE(mlir_aie_python, m)
     bind_mlir_aie_cpp_int32_to_int64(m);
     bind_mlir_aie_cpp_sync_long_test(m);
     bind_mlir_aie_cpp_tagged_int32_to_int64(m);
+    bind_mlir_aie_cpp_fft_test(m);
     // ) END BINDING_FUNCTION_CALLS
 }
