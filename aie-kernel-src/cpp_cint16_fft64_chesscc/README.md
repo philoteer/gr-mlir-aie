@@ -13,6 +13,12 @@ overflow that a full-scale coherent input would cause in `cint16`.
 The `count` argument is the number of complex samples and must be a multiple of
 64. Each consecutive group of 64 samples is transformed independently.
 
+## Output format
+
+The output is interleaved complex `cint32` in Q6.15 format. The FFT is
+unnormalized, so the six bits of growth from the 64-point transform are kept.
+Bins are in `fftshift` order, with DC at output index 32.
+
 `fft64_twiddles.h` is generated deterministically from the staged-FFT formula:
 
 ```sh
