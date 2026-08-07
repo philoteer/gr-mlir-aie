@@ -33,4 +33,5 @@ install(FILES
     mlir_aie_mlir_aie_cpp_int32_to_int64.block.yml
     mlir_aie_mlir_aie_cpp_sync_long_test.block.yml
     mlir_aie_mlir_aie_cpp_tagged_int32_to_int64.block.yml
-    mlir_aie_mlir_aie_cpp_fft_test.block.yml DESTINATION share/gnuradio/grc/blocks)
+    mlir_aie_mlir_aie_cpp_fft_test.block.yml
+    mlir_aie_mlir_aie_80211_phy.block.yml DESTINATION share/gnuradio/grc/blocks)
