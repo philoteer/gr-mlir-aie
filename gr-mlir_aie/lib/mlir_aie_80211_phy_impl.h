@@ -32,8 +32,8 @@ private:
     static constexpr int _CSI_SIZE = 64;
 
     struct csi_value {
-        float real;
-        float imag;
+        std::int32_t real;
+        std::int32_t imag;
     };
 
     struct tag_metadata {
@@ -41,10 +41,10 @@ private:
         std::uint32_t reserved;
         std::uint64_t frame_bytes;
         std::uint64_t encoding;
-        double snr;
-        double nominal_frequency;
-        double frequency_offset;
-        double beta;
+        std::int32_t snr;
+        std::int32_t nominal_frequency;
+        std::int32_t frequency_offset;
+        std::int32_t beta;
         csi_value csi[_CSI_SIZE];
     };
 

@@ -121,6 +121,7 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
     const auto beta_key = pmt::intern("beta");
     const auto csi_key = pmt::intern("csi");
     const auto tag_srcid = pmt::intern("frame_equalizer");
+    constexpr double q16_15_scale = 1.0 / (std::int64_t{ 1 } << 15);
     const uint64_t output_abs_start = nitems_written(0);
     int total_produced = 0;
 
@@ -161,8 +162,10 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
                     const uint64_t tag_offset = tile_abs_start + tag.offset;
                     std::vector<std::complex<float>> csi(_CSI_SIZE);
                     for (int csi_idx = 0; csi_idx < _CSI_SIZE; ++csi_idx) {
-                        csi[csi_idx] = { tag.csi[csi_idx].real,
-                                         tag.csi[csi_idx].imag };
+                        csi[csi_idx] = {
+                            static_cast<float>(tag.csi[csi_idx].real * q16_15_scale),
+                            static_cast<float>(tag.csi[csi_idx].imag * q16_15_scale)
+                        };
                     }
 
                     add_item_tag(0,
@@ -176,19 +179,27 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
                                  pmt::from_uint64(tag.encoding),
                                  tag_srcid);
                     add_item_tag(
-                        0, tag_offset, snr_key, pmt::from_double(tag.snr), tag_srcid);
+                        0,
+                        tag_offset,
+                        snr_key,
+                        pmt::from_double(tag.snr * q16_15_scale),
+                        tag_srcid);
                     add_item_tag(0,
                                  tag_offset,
                                  nominal_frequency_key,
-                                 pmt::from_double(tag.nominal_frequency),
+                                 pmt::from_double(tag.nominal_frequency * q16_15_scale),
                                  tag_srcid);
                     add_item_tag(0,
                                  tag_offset,
                                  frequency_offset_key,
-                                 pmt::from_double(tag.frequency_offset),
+                                 pmt::from_double(tag.frequency_offset * q16_15_scale),
                                  tag_srcid);
                     add_item_tag(
-                        0, tag_offset, beta_key, pmt::from_double(tag.beta), tag_srcid);
+                        0,
+                        tag_offset,
+                        beta_key,
+                        pmt::from_double(tag.beta * q16_15_scale),
+                        tag_srcid);
                     add_item_tag(0,
                                  tag_offset,
                                  csi_key,
