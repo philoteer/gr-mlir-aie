@@ -10,16 +10,73 @@
 
 #include <gnuradio/mlir_aie/mlir_aie_80211_phy.h>
 
+#include "runtime_lib/test_lib/test_utils.h"
+#include "xrt/xrt_bo.h"
+#include "xrt/xrt_device.h"
+#include "xrt/xrt_kernel.h"
+
+#include <cstdint>
+#include <vector>
+
 namespace gr {
 namespace mlir_aie {
+
+using phy_input_type = std::int32_t;
+using phy_output_type = std::int8_t;
 
 class mlir_aie_80211_phy_impl : public mlir_aie_80211_phy
 {
 private:
-    // Nothing to declare in this block.
+    static constexpr int _MAX_TAGS_PER_TILE = 31;
+    static constexpr int _N_TILES = 4;
+    static constexpr int _CSI_SIZE = 64;
+
+    struct csi_value {
+        float real;
+        float imag;
+    };
+
+    struct tag_metadata {
+        std::int32_t offset;
+        std::uint32_t reserved;
+        std::uint64_t frame_bytes;
+        std::uint64_t encoding;
+        double snr;
+        double nominal_frequency;
+        double frequency_offset;
+        double beta;
+        csi_value csi[_CSI_SIZE];
+    };
+
+    struct tile_metadata {
+        std::int32_t output_length;
+        std::int32_t tag_count;
+        tag_metadata tags[_MAX_TAGS_PER_TILE];
+    };
+
+    const char* _path_xclbin;
+    const char* _path_insts_bin;
+    int _VECTOR_SIZE;
+    int _TILE_SIZE;
+    const char* _kernel_name;
+    int _trace_size;
+    unsigned int _opcode_run;
+    xrt::kernel _kernel;
+    xrt::bo _bo_instr, _bo_inA, _bo_out, _bo_out_meta;
+    std::vector<uint32_t> _instr_v;
+    xrt::device _device;
+    xrt::run _run;
+
+    phy_input_type* _bufInA;
+    phy_output_type* _bufOut;
+    tile_metadata* _bufOutMeta;
+    void* bufInstr;
 
 public:
-    mlir_aie_80211_phy_impl();
+    mlir_aie_80211_phy_impl(const char* path_xclbin,
+                            const char* path_insts_bin,
+                            const char* kernel_name,
+                            int VECTOR_SIZE);
     ~mlir_aie_80211_phy_impl();
 
     // Where all the action really happens

@@ -14,7 +14,7 @@
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
 /* BINDTOOL_HEADER_FILE(mlir_aie_80211_phy.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(372e35a1fc64fa72dbedd183cc4ad957)                     */
+/* BINDTOOL_HEADER_FILE_HASH(404439f8b418d8037cc5cc3f3c9a52c4)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -37,7 +37,11 @@ void bind_mlir_aie_80211_phy(py::module& m)
         std::shared_ptr<mlir_aie_80211_phy>>(m, "mlir_aie_80211_phy", D(mlir_aie_80211_phy))
 
         .def(py::init(&mlir_aie_80211_phy::make),
-           D(mlir_aie_80211_phy,make)
+           D(mlir_aie_80211_phy,make),
+           py::arg("path_xclbin"),
+           py::arg("path_insts_bin"),
+           py::arg("kernel_name"),
+           py::arg("VECTOR_SIZE")
         )
         
 
@@ -49,8 +53,6 @@ void bind_mlir_aie_80211_phy(py::module& m)
 
 
 }
-
-
 
 
 

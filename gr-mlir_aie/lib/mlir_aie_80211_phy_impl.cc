@@ -7,43 +7,97 @@
 
 #include "mlir_aie_80211_phy_impl.h"
 #include <gnuradio/io_signature.h>
+#include <pmt/pmt.h>
+
+#include <algorithm>
+#include <complex>
+#include <cstring>
+#include <iostream>
 
 namespace gr {
 namespace mlir_aie {
 
-#pragma message("set the following appropriately and remove this warning")
-using input_type = float;
-#pragma message("set the following appropriately and remove this warning")
-using output_type = float;
-mlir_aie_80211_phy::sptr mlir_aie_80211_phy::make()
+mlir_aie_80211_phy::sptr mlir_aie_80211_phy::make(const char* path_xclbin,
+                                                   const char* path_insts_bin,
+                                                   const char* kernel_name,
+                                                   int VECTOR_SIZE)
 {
-    return gnuradio::make_block_sptr<mlir_aie_80211_phy_impl>();
+    return gnuradio::make_block_sptr<mlir_aie_80211_phy_impl>(
+        path_xclbin, path_insts_bin, kernel_name, VECTOR_SIZE);
 }
 
-
-/*
- * The private constructor
- */
-mlir_aie_80211_phy_impl::mlir_aie_80211_phy_impl()
+mlir_aie_80211_phy_impl::mlir_aie_80211_phy_impl(const char* path_xclbin,
+                                                 const char* path_insts_bin,
+                                                 const char* kernel_name,
+                                                 int VECTOR_SIZE)
     : gr::block("mlir_aie_80211_phy",
-                gr::io_signature::make(
-                    1 /* min inputs */, 1 /* max inputs */, sizeof(input_type)),
-                gr::io_signature::make(
-                    1 /* min outputs */, 1 /*max outputs */, sizeof(output_type)))
+                gr::io_signature::make(1, 1, sizeof(phy_input_type)),
+                gr::io_signature::make(1, 1, sizeof(phy_output_type)))
 {
+    _path_xclbin = path_xclbin;
+    _path_insts_bin = path_insts_bin;
+    _VECTOR_SIZE = VECTOR_SIZE;
+    _TILE_SIZE = _VECTOR_SIZE / _N_TILES;
+    _kernel_name = kernel_name;
+    _trace_size = 0;
+    _opcode_run = 3;
+
+    set_tag_propagation_policy(TPP_DONT);
+
+    _instr_v = test_utils::load_instr_binary(path_insts_bin);
+    std::cout << "Sequence instr count: " << _instr_v.size() << "\n";
+
+    test_utils::init_xrt_load_kernel(_device, _kernel, 1, path_xclbin, _kernel_name);
+
+    std::cout << "kernel load ok";
+    _bo_instr = xrt::bo(_device,
+                        _instr_v.size() * sizeof(int),
+                        XCL_BO_FLAGS_CACHEABLE,
+                        _kernel.group_id(1));
+    _bo_inA = xrt::bo(_device,
+                      _VECTOR_SIZE * sizeof(phy_input_type),
+                      XRT_BO_FLAGS_HOST_ONLY,
+                      _kernel.group_id(3));
+    _bo_out = xrt::bo(_device,
+                      _VECTOR_SIZE * sizeof(phy_output_type) + _trace_size,
+                      XRT_BO_FLAGS_HOST_ONLY,
+                      _kernel.group_id(3));
+    _bo_out_meta = xrt::bo(_device,
+                           _N_TILES * sizeof(tile_metadata),
+                           XRT_BO_FLAGS_HOST_ONLY,
+                           _kernel.group_id(3));
+
+    std::cout << "Writing data into buffer objects.\n";
+
+    bufInstr = _bo_instr.map<void*>();
+    std::memcpy(bufInstr, _instr_v.data(), _instr_v.size() * sizeof(int));
+
+    _bufInA = _bo_inA.map<phy_input_type*>();
+    _bufOut = _bo_out.map<phy_output_type*>();
+    _bufOutMeta = _bo_out_meta.map<tile_metadata*>();
+    std::memset(_bufOut, 42, _VECTOR_SIZE * sizeof(phy_output_type) + _trace_size);
+    std::memset(_bufOutMeta, 0, _N_TILES * sizeof(tile_metadata));
+
+    _bo_out.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    _bo_out_meta.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+    _bo_instr.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+
+    _run = xrt::run(_kernel);
+
+    _run.set_arg(0, _opcode_run);
+    _run.set_arg(1, _bo_instr);
+    _run.set_arg(2, _instr_v.size());
+    _run.set_arg(3, _bo_inA);
+    _run.set_arg(4, _bo_out);
+    _run.set_arg(5, _bo_out_meta);
 }
 
-/*
- * Our virtual destructor.
- */
 mlir_aie_80211_phy_impl::~mlir_aie_80211_phy_impl() {}
 
 void mlir_aie_80211_phy_impl::forecast(int noutput_items,
                                        gr_vector_int& ninput_items_required)
 {
-#pragma message( \
-    "implement a forecast that fills in how many items on each input you need to produce noutput_items and remove this warning")
-    /* <+forecast+> e.g. ninput_items_required[0] = noutput_items */
+    ninput_items_required[0] = noutput_items;
 }
 
 int mlir_aie_80211_phy_impl::general_work(int noutput_items,
@@ -51,17 +105,106 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
                                           gr_vector_const_void_star& input_items,
                                           gr_vector_void_star& output_items)
 {
-    auto in = static_cast<const input_type*>(input_items[0]);
-    auto out = static_cast<output_type*>(output_items[0]);
+    auto in = static_cast<const phy_input_type*>(input_items[0]);
+    auto out = static_cast<phy_output_type*>(output_items[0]);
 
-#pragma message("Implement the signal processing in your block and remove this warning")
-    // Do <+signal processing+>
-    // Tell runtime system how many input items we consumed on
-    // each input stream.
-    consume_each(noutput_items);
+    const int n_chunks = std::min(ninput_items[0], noutput_items) / _VECTOR_SIZE;
+    if (n_chunks == 0) {
+        return 0;
+    }
 
-    // Tell runtime system how many output items we produced.
-    return noutput_items;
+    const auto frame_bytes_key = pmt::intern("frame bytes");
+    const auto encoding_key = pmt::intern("encoding");
+    const auto snr_key = pmt::intern("snr");
+    const auto nominal_frequency_key = pmt::intern("nominal frequency");
+    const auto frequency_offset_key = pmt::intern("frequency offset");
+    const auto beta_key = pmt::intern("beta");
+    const auto csi_key = pmt::intern("csi");
+    const auto tag_srcid = pmt::intern("frame_equalizer");
+    const uint64_t output_abs_start = nitems_written(0);
+    int total_produced = 0;
+
+    for (int i = 0; i < n_chunks; ++i) {
+        const phy_input_type* in_ptr = in + (i * _VECTOR_SIZE);
+
+        std::memcpy(_bufInA, in_ptr, _VECTOR_SIZE * sizeof(phy_input_type));
+        _bo_inA.sync(XCL_BO_SYNC_BO_TO_DEVICE);
+
+        _run.start();
+        _run.wait();
+
+        _bo_out.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+        _bo_out_meta.sync(XCL_BO_SYNC_BO_FROM_DEVICE);
+
+        for (int tile_idx = 0; tile_idx < _N_TILES; ++tile_idx) {
+            const tile_metadata& tile_meta = _bufOutMeta[tile_idx];
+
+            int tile_len = tile_meta.output_length;
+            const int tag_count = tile_meta.tag_count;
+            const int tile_start = tile_idx * _TILE_SIZE;
+
+            if (tile_len < 0) {
+                tile_len = 0;
+            } else if (tile_len > _TILE_SIZE) {
+                tile_len = _TILE_SIZE;
+            }
+
+            std::memcpy(out + total_produced,
+                        _bufOut + tile_start,
+                        tile_len * sizeof(phy_output_type));
+
+            const uint64_t tile_abs_start = output_abs_start + total_produced;
+            for (int tag_idx = 0; tag_idx < tag_count; ++tag_idx) {
+                const tag_metadata& tag = tile_meta.tags[tag_idx];
+
+                if (0 <= tag.offset && tag.offset < tile_len) {
+                    const uint64_t tag_offset = tile_abs_start + tag.offset;
+                    std::vector<std::complex<float>> csi(_CSI_SIZE);
+                    for (int csi_idx = 0; csi_idx < _CSI_SIZE; ++csi_idx) {
+                        csi[csi_idx] = { tag.csi[csi_idx].real,
+                                         tag.csi[csi_idx].imag };
+                    }
+
+                    add_item_tag(0,
+                                 tag_offset,
+                                 frame_bytes_key,
+                                 pmt::from_uint64(tag.frame_bytes),
+                                 tag_srcid);
+                    add_item_tag(0,
+                                 tag_offset,
+                                 encoding_key,
+                                 pmt::from_uint64(tag.encoding),
+                                 tag_srcid);
+                    add_item_tag(
+                        0, tag_offset, snr_key, pmt::from_double(tag.snr), tag_srcid);
+                    add_item_tag(0,
+                                 tag_offset,
+                                 nominal_frequency_key,
+                                 pmt::from_double(tag.nominal_frequency),
+                                 tag_srcid);
+                    add_item_tag(0,
+                                 tag_offset,
+                                 frequency_offset_key,
+                                 pmt::from_double(tag.frequency_offset),
+                                 tag_srcid);
+                    add_item_tag(
+                        0, tag_offset, beta_key, pmt::from_double(tag.beta), tag_srcid);
+                    add_item_tag(0,
+                                 tag_offset,
+                                 csi_key,
+                                 pmt::init_c32vector(csi.size(), csi),
+                                 tag_srcid);
+                }
+            }
+
+            total_produced += tile_len;
+        }
+    }
+
+    const int processed_items = n_chunks * _VECTOR_SIZE;
+    consume_each(processed_items);
+
+    return total_produced;
 }
 
 } /* namespace mlir_aie */
