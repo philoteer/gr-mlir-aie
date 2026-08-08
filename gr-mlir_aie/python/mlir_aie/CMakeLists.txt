@@ -23,6 +23,7 @@ gr_python_install(FILES __init__.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_a
 gr_python_install(FILES mlir_aie_python_uint8.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_aie)
 gr_python_install(FILES mlir_aie_python_int32.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_aie)
 gr_python_install(FILES mlir_aie_python_bfloat16.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_aie)
+gr_python_install(FILES mlir_aie_python_tagged_int32_to_int64.py DESTINATION ${GR_PYTHON_DIR}/gnuradio/mlir_aie)
 ########################################################################
 # Handle the unit tests
 ########################################################################
