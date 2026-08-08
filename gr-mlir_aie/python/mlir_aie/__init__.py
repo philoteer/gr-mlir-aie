@@ -23,4 +23,5 @@ except ModuleNotFoundError:
 from .mlir_aie_python_uint8 import mlir_aie_python_uint8
 from .mlir_aie_python_int32 import mlir_aie_python_int32
 from .mlir_aie_python_bfloat16 import mlir_aie_python_bfloat16
+from .mlir_aie_python_tagged_int32_to_int64 import mlir_aie_python_tagged_int32_to_int64
 #
