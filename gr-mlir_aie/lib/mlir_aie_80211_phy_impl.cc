@@ -141,7 +141,8 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
             const tile_metadata& tile_meta = _bufOutMeta[tile_idx];
 
             int tile_len = tile_meta.output_length;
-            const int tag_count = tile_meta.tag_count;
+            const int tag_count =
+                std::clamp(tile_meta.tag_count, 0, _MAX_TAGS_PER_TILE);
             const int tile_start = tile_idx * _TILE_SIZE;
 
             if (tile_len < 0) {
@@ -160,8 +161,8 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
 
                 if (0 <= tag.offset && tag.offset < tile_len) {
                     const uint64_t tag_offset = tile_abs_start + tag.offset;
-                    std::vector<std::complex<float>> csi(_CSI_SIZE);
-                    for (int csi_idx = 0; csi_idx < _CSI_SIZE; ++csi_idx) {
+                    std::vector<std::complex<float>> csi(_CSI_TAG_SIZE);
+                    for (int csi_idx = 0; csi_idx < _CSI_TAG_SIZE; ++csi_idx) {
                         csi[csi_idx] = {
                             static_cast<float>(tag.csi[csi_idx].real * q16_15_scale),
                             static_cast<float>(tag.csi[csi_idx].imag * q16_15_scale)
@@ -187,7 +188,7 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
                     add_item_tag(0,
                                  tag_offset,
                                  nominal_frequency_key,
-                                 pmt::from_double(tag.nominal_frequency * q16_15_scale),
+                                  pmt::from_double(tag.nominal_frequency),
                                  tag_srcid);
                     add_item_tag(0,
                                  tag_offset,

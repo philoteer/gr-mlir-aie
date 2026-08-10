@@ -27,9 +27,10 @@ using phy_output_type = std::int8_t;
 class mlir_aie_80211_phy_impl : public mlir_aie_80211_phy
 {
 private:
-    static constexpr int _MAX_TAGS_PER_TILE = 31;
+    static constexpr int _MAX_TAGS_PER_TILE = 16;
     static constexpr int _N_TILES = 4;
     static constexpr int _CSI_SIZE = 64;
+    static constexpr int _CSI_TAG_SIZE = 52;
 
     struct csi_value {
         std::int32_t real;
@@ -42,7 +43,7 @@ private:
         std::uint64_t frame_bytes;
         std::uint64_t encoding;
         std::int32_t snr;
-        std::int32_t nominal_frequency;
+        std::uint32_t nominal_frequency;
         std::int32_t frequency_offset;
         std::int32_t beta;
         csi_value csi[_CSI_SIZE];
