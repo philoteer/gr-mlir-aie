@@ -44,7 +44,7 @@ private:
         std::uint32_t reserved;
         std::uint64_t frame_bytes;
         std::uint64_t encoding;
-        std::uint32_t snr_linear_q15;
+        std::uint64_t snr_linear;
         std::int32_t frequency_offset;
         std::int32_t beta;
         csi_value csi[_CSI_SIZE];
@@ -58,11 +58,11 @@ private:
 
     static_assert(sizeof(tag_metadata) == 552,
                   "frame equalizer tag metadata ABI changed");
-    static_assert(offsetof(tag_metadata, snr_linear_q15) == 24,
+    static_assert(offsetof(tag_metadata, snr_linear) == 24,
                   "frame equalizer linear SNR ABI changed");
-    static_assert(offsetof(tag_metadata, frequency_offset) == 28,
+    static_assert(offsetof(tag_metadata, frequency_offset) == 32,
                   "frame equalizer frequency offset ABI changed");
-    static_assert(offsetof(tag_metadata, csi) == 36,
+    static_assert(offsetof(tag_metadata, csi) == 40,
                   "frame equalizer CSI ABI changed");
     static_assert(sizeof(tile_metadata) == 8840,
                   "frame equalizer tile metadata ABI changed");

@@ -183,10 +183,8 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
                         };
                     }
 
-                    const double snr = tag.snr_linear_q15 == UINT32_MAX
-                                           ? 100.0
-                                           : 10.0 * std::log10(tag.snr_linear_q15 *
-                                                               q16_15_scale);
+                    const double snr =
+                        10.0 * std::log10(static_cast<double>(tag.snr_linear) / 2.0);
                     add_item_tag(0,
                                  tag_offset,
                                  frame_bytes_key,
