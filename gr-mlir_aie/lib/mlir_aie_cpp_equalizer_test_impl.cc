@@ -221,6 +221,10 @@ int mlir_aie_cpp_equalizer_test_impl::general_work(int noutput_items,
                     };
                 }
 
+                const double snr = tag.snr_linear_q15 == UINT32_MAX
+                                       ? 100.0
+                                       : 10.0 * std::log10(tag.snr_linear_q15 *
+                                                           q16_15_scale);
                 add_item_tag(0,
                              tag_offset,
                              frame_bytes_key,
@@ -234,7 +238,7 @@ int mlir_aie_cpp_equalizer_test_impl::general_work(int noutput_items,
                 add_item_tag(0,
                              tag_offset,
                              snr_key,
-                             pmt::from_double(tag.snr * q16_15_scale),
+                             pmt::from_double(snr),
                              tag_srcid);
                 add_item_tag(0,
                              tag_offset,
