@@ -13,8 +13,8 @@
 /* If manual edits are made, the following tags should be modified accordingly.    */
 /* BINDTOOL_GEN_AUTOMATIC(0)                                                       */
 /* BINDTOOL_USE_PYGCCXML(0)                                                        */
-/* BINDTOOL_HEADER_FILE(mlir_aie_cpp_equalizer_test.h)                                        */
-/* BINDTOOL_HEADER_FILE_HASH(3569d020c486faba1974897e874f6143)                     */
+/* BINDTOOL_HEADER_FILE(mlir_aie_cpp_equalizer_test.h) */
+/* BINDTOOL_HEADER_FILE_HASH(93d79acc6129b3b3c20f3cbeb474879d)                     */
 /***********************************************************************************/
 
 #include <pybind11/complex.h>
@@ -30,30 +30,22 @@ namespace py = pybind11;
 void bind_mlir_aie_cpp_equalizer_test(py::module& m)
 {
 
-    using mlir_aie_cpp_equalizer_test    = gr::mlir_aie::mlir_aie_cpp_equalizer_test;
+    using mlir_aie_cpp_equalizer_test = gr::mlir_aie::mlir_aie_cpp_equalizer_test;
 
 
-    py::class_<mlir_aie_cpp_equalizer_test, gr::block, gr::basic_block,
-        std::shared_ptr<mlir_aie_cpp_equalizer_test>>(m, "mlir_aie_cpp_equalizer_test", D(mlir_aie_cpp_equalizer_test))
+    py::class_<mlir_aie_cpp_equalizer_test,
+               gr::block,
+               gr::basic_block,
+               std::shared_ptr<mlir_aie_cpp_equalizer_test>>(
+        m, "mlir_aie_cpp_equalizer_test", D(mlir_aie_cpp_equalizer_test))
 
         .def(py::init(&mlir_aie_cpp_equalizer_test::make),
-           D(mlir_aie_cpp_equalizer_test,make)
-        )
-        
-
+             D(mlir_aie_cpp_equalizer_test, make),
+             py::arg("path_xclbin") = "build/final.xclbin",
+             py::arg("path_insts_bin") = "build/insts.bin",
+             py::arg("kernel_name") = "MLIR_AIE",
+             py::arg("VECTOR_SIZE") = 4096)
 
 
         ;
-
-
-
-
 }
-
-
-
-
-
-
-
-

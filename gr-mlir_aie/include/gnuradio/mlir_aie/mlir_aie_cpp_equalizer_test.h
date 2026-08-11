@@ -15,9 +15,12 @@ namespace gr {
 namespace mlir_aie {
 
 /*!
- * \brief <+description of block+>
+ * \brief Run the MLIR-AIE frame equalizer kernel.
  * \ingroup mlir_aie
  *
+ * Complex float input samples are converted to packed Q16.15 cint32 values for
+ * the kernel. Input wifi_start tags and output frame metadata are transferred
+ * through the kernel's per-tile metadata buffers.
  */
 class MLIR_AIE_API mlir_aie_cpp_equalizer_test : virtual public gr::block
 {
@@ -33,7 +36,10 @@ public:
      * class. mlir_aie::mlir_aie_cpp_equalizer_test::make is the public interface for
      * creating new instances.
      */
-    static sptr make();
+    static sptr make(const char* path_xclbin,
+                     const char* path_insts_bin,
+                     const char* kernel_name,
+                     int VECTOR_SIZE);
 };
 
 } // namespace mlir_aie
