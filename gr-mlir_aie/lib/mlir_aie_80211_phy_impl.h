@@ -15,6 +15,8 @@
 #include "xrt/xrt_device.h"
 #include "xrt/xrt_kernel.h"
 
+#include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -43,7 +45,6 @@ private:
         std::uint64_t frame_bytes;
         std::uint64_t encoding;
         std::int32_t snr;
-        std::uint32_t nominal_frequency;
         std::int32_t frequency_offset;
         std::int32_t beta;
         csi_value csi[_CSI_SIZE];
@@ -55,10 +56,20 @@ private:
         tag_metadata tags[_MAX_TAGS_PER_TILE];
     };
 
+    static_assert(sizeof(tag_metadata) == 552,
+                  "frame equalizer tag metadata ABI changed");
+    static_assert(offsetof(tag_metadata, frequency_offset) == 28,
+                  "frame equalizer frequency offset ABI changed");
+    static_assert(offsetof(tag_metadata, csi) == 36,
+                  "frame equalizer CSI ABI changed");
+    static_assert(sizeof(tile_metadata) == 8840,
+                  "frame equalizer tile metadata ABI changed");
+
     const char* _path_xclbin;
     const char* _path_insts_bin;
     int _VECTOR_SIZE;
     int _TILE_SIZE;
+    std::atomic<double> _nominal_frequency;
     const char* _kernel_name;
     int _trace_size;
     unsigned int _opcode_run;
@@ -75,13 +86,17 @@ private:
 
 public:
     mlir_aie_80211_phy_impl(const char* path_xclbin,
-                            const char* path_insts_bin,
-                            const char* kernel_name,
-                            int VECTOR_SIZE);
+                             const char* path_insts_bin,
+                             const char* kernel_name,
+                             int VECTOR_SIZE,
+                             double nominal_frequency);
     ~mlir_aie_80211_phy_impl();
 
     // Where all the action really happens
     void forecast(int noutput_items, gr_vector_int& ninput_items_required);
+
+    void set_nominal_frequency(double nominal_frequency) override;
+    double nominal_frequency() const override;
 
     int general_work(int noutput_items,
                      gr_vector_int& ninput_items,

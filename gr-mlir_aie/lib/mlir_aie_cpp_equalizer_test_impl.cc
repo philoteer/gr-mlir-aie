@@ -22,22 +22,25 @@ mlir_aie_cpp_equalizer_test::sptr
 mlir_aie_cpp_equalizer_test::make(const char* path_xclbin,
                                   const char* path_insts_bin,
                                   const char* kernel_name,
-                                  int VECTOR_SIZE)
+                                  int VECTOR_SIZE,
+                                  double nominal_frequency)
 {
     return gnuradio::make_block_sptr<mlir_aie_cpp_equalizer_test_impl>(
-        path_xclbin, path_insts_bin, kernel_name, VECTOR_SIZE);
+        path_xclbin, path_insts_bin, kernel_name, VECTOR_SIZE, nominal_frequency);
 }
 
 mlir_aie_cpp_equalizer_test_impl::mlir_aie_cpp_equalizer_test_impl(
     const char* path_xclbin,
     const char* path_insts_bin,
     const char* kernel_name,
-    int VECTOR_SIZE)
+    int VECTOR_SIZE,
+    double nominal_frequency)
     : gr::block("mlir_aie_cpp_equalizer_test",
                 gr::io_signature::make(1, 1, sizeof(equalizer_input_type)),
                 gr::io_signature::make(1, 1, sizeof(equalizer_output_type))),
       _VECTOR_SIZE(VECTOR_SIZE),
       _TILE_SIZE(VECTOR_SIZE / _N_TILES),
+      _nominal_frequency(nominal_frequency),
       _opcode_run(3)
 {
     if (_VECTOR_SIZE <= 0 || _VECTOR_SIZE % _N_TILES != 0) {
@@ -99,6 +102,16 @@ mlir_aie_cpp_equalizer_test_impl::mlir_aie_cpp_equalizer_test_impl(
 }
 
 mlir_aie_cpp_equalizer_test_impl::~mlir_aie_cpp_equalizer_test_impl() {}
+
+void mlir_aie_cpp_equalizer_test_impl::set_nominal_frequency(double nominal_frequency)
+{
+    _nominal_frequency.store(nominal_frequency);
+}
+
+double mlir_aie_cpp_equalizer_test_impl::nominal_frequency() const
+{
+    return _nominal_frequency.load();
+}
 
 void mlir_aie_cpp_equalizer_test_impl::forecast(int noutput_items,
                                                 gr_vector_int& ninput_items_required)
@@ -226,7 +239,7 @@ int mlir_aie_cpp_equalizer_test_impl::general_work(int noutput_items,
                 add_item_tag(0,
                              tag_offset,
                              nominal_frequency_key,
-                             pmt::from_double(tag.nominal_frequency),
+                             pmt::from_double(nominal_frequency()),
                              tag_srcid);
                 add_item_tag(0,
                              tag_offset,

@@ -20,19 +20,22 @@ namespace mlir_aie {
 mlir_aie_80211_phy::sptr mlir_aie_80211_phy::make(const char* path_xclbin,
                                                    const char* path_insts_bin,
                                                    const char* kernel_name,
-                                                   int VECTOR_SIZE)
+                                                   int VECTOR_SIZE,
+                                                   double nominal_frequency)
 {
     return gnuradio::make_block_sptr<mlir_aie_80211_phy_impl>(
-        path_xclbin, path_insts_bin, kernel_name, VECTOR_SIZE);
+        path_xclbin, path_insts_bin, kernel_name, VECTOR_SIZE, nominal_frequency);
 }
 
 mlir_aie_80211_phy_impl::mlir_aie_80211_phy_impl(const char* path_xclbin,
                                                  const char* path_insts_bin,
                                                  const char* kernel_name,
-                                                 int VECTOR_SIZE)
+                                                 int VECTOR_SIZE,
+                                                 double nominal_frequency)
     : gr::block("mlir_aie_80211_phy",
-                gr::io_signature::make(1, 1, sizeof(phy_input_type)),
-                gr::io_signature::make(1, 1, sizeof(phy_output_type)))
+                 gr::io_signature::make(1, 1, sizeof(phy_input_type)),
+                 gr::io_signature::make(1, 1, sizeof(phy_output_type))),
+      _nominal_frequency(nominal_frequency)
 {
     _path_xclbin = path_xclbin;
     _path_insts_bin = path_insts_bin;
@@ -93,6 +96,16 @@ mlir_aie_80211_phy_impl::mlir_aie_80211_phy_impl(const char* path_xclbin,
 }
 
 mlir_aie_80211_phy_impl::~mlir_aie_80211_phy_impl() {}
+
+void mlir_aie_80211_phy_impl::set_nominal_frequency(double nominal_frequency)
+{
+    _nominal_frequency.store(nominal_frequency);
+}
+
+double mlir_aie_80211_phy_impl::nominal_frequency() const
+{
+    return _nominal_frequency.load();
+}
 
 void mlir_aie_80211_phy_impl::forecast(int noutput_items,
                                        gr_vector_int& ninput_items_required)
@@ -186,10 +199,10 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
                         pmt::from_double(tag.snr * q16_15_scale),
                         tag_srcid);
                     add_item_tag(0,
-                                 tag_offset,
-                                 nominal_frequency_key,
-                                  pmt::from_double(tag.nominal_frequency),
-                                 tag_srcid);
+                                  tag_offset,
+                                  nominal_frequency_key,
+                                  pmt::from_double(nominal_frequency()),
+                                  tag_srcid);
                     add_item_tag(0,
                                  tag_offset,
                                  frequency_offset_key,
