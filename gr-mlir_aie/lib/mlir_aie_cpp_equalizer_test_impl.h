@@ -53,6 +53,7 @@ private:
         std::uint64_t frame_bytes;
         std::uint64_t encoding;
         std::uint64_t snr_linear;
+        std::uint32_t center_frequency_mhz;
         std::int32_t frequency_offset;
         std::int32_t beta;
         csi_value csi[_CSI_SIZE];
@@ -65,15 +66,17 @@ private:
     };
 
     static_assert(sizeof(kernel_input_type) == 8, "cint32 input ABI changed");
-    static_assert(sizeof(tag_metadata) == 552,
+    static_assert(sizeof(tag_metadata) == 560,
                    "frame equalizer tag metadata ABI changed");
     static_assert(offsetof(tag_metadata, snr_linear) == 24,
                   "frame equalizer linear SNR ABI changed");
-    static_assert(offsetof(tag_metadata, frequency_offset) == 32,
+    static_assert(offsetof(tag_metadata, center_frequency_mhz) == 32,
+                  "frame equalizer center frequency ABI changed");
+    static_assert(offsetof(tag_metadata, frequency_offset) == 36,
                   "frame equalizer frequency offset ABI changed");
-    static_assert(offsetof(tag_metadata, csi) == 40,
+    static_assert(offsetof(tag_metadata, csi) == 44,
                   "frame equalizer CSI ABI changed");
-    static_assert(sizeof(tile_metadata) == 8840,
+    static_assert(sizeof(tile_metadata) == 8968,
                   "frame equalizer tile metadata ABI changed");
 
     int _VECTOR_SIZE;

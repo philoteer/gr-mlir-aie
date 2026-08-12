@@ -204,7 +204,7 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
                     add_item_tag(0,
                                   tag_offset,
                                   nominal_frequency_key,
-                                  pmt::from_double(nominal_frequency()),
+                                  pmt::from_double(tag.center_frequency_mhz * 1e6),
                                   tag_srcid);
                     add_item_tag(0,
                                  tag_offset,
