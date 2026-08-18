@@ -161,8 +161,11 @@ int mlir_aie_cpp_equalizer_test_impl::general_work(int noutput_items,
     const auto csi_key = pmt::intern("csi");
     const auto tag_srcid = pmt::intern("frame_equalizer");
     constexpr double q16_15_scale = 1.0 / (std::int64_t{ 1 } << 15);
+    constexpr double q29_full_scale = static_cast<double>(std::int64_t{ 1 } << 29);
+    constexpr double q29_scale = 1.0 / q29_full_scale;
+    constexpr double sample_rate = 20e6;
+    constexpr double pi = 3.14159265358979323846;
     constexpr double snr_q4_scale = static_cast<double>(1 << 4);
-    constexpr double q29_scale = static_cast<double>(std::int64_t{ 1 } << 29);
     const uint64_t input_abs_start = nitems_read(0);
     const uint64_t output_abs_start = nitems_written(0);
     int total_produced = 0;
@@ -203,7 +206,7 @@ int mlir_aie_cpp_equalizer_test_impl::general_work(int noutput_items,
                 tile_meta[2 + 2 * tag_idx] =
                     static_cast<std::int32_t>(tags[tag_idx].offset - tile_abs_start);
                 tile_meta[3 + 2 * tag_idx] =
-                    to_int32(pmt::to_double(tags[tag_idx].value) * q29_scale);
+                    to_int32(pmt::to_double(tags[tag_idx].value) * q29_full_scale);
             }
         }
 
@@ -266,12 +269,13 @@ int mlir_aie_cpp_equalizer_test_impl::general_work(int noutput_items,
                 add_item_tag(0,
                              tag_offset,
                              frequency_offset_key,
-                             pmt::from_double(tag.frequency_offset * q16_15_scale),
+                             pmt::from_double(tag.frequency_offset * q29_scale *
+                                              sample_rate / (2.0 * pi)),
                              tag_srcid);
                 add_item_tag(0,
                              tag_offset,
                              beta_key,
-                             pmt::from_double(tag.beta * q16_15_scale),
+                             pmt::from_double(tag.beta * q29_scale),
                              tag_srcid);
                 add_item_tag(0,
                              tag_offset,

@@ -157,6 +157,9 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
     const auto csi_key = pmt::intern("csi");
     const auto tag_srcid = pmt::intern("frame_equalizer");
     constexpr double q16_15_scale = 1.0 / (std::int64_t{ 1 } << 15);
+    constexpr double q29_scale = 1.0 / (std::int64_t{ 1 } << 29);
+    constexpr double sample_rate = 20e6;
+    constexpr double pi = 3.14159265358979323846;
     constexpr double snr_q4_scale = static_cast<double>(1 << 4);
     const uint64_t output_abs_start = nitems_written(0);
     int total_produced = 0;
@@ -229,15 +232,16 @@ int mlir_aie_80211_phy_impl::general_work(int noutput_items,
                                   pmt::from_double(tag.center_frequency_mhz * 1e6),
                                   tag_srcid);
                     add_item_tag(0,
-                                 tag_offset,
-                                 frequency_offset_key,
-                                 pmt::from_double(tag.frequency_offset * q16_15_scale),
-                                 tag_srcid);
+                                  tag_offset,
+                                  frequency_offset_key,
+                                  pmt::from_double(tag.frequency_offset * q29_scale *
+                                                   sample_rate / (2.0 * pi)),
+                                  tag_srcid);
                     add_item_tag(
                         0,
                         tag_offset,
                         beta_key,
-                        pmt::from_double(tag.beta * q16_15_scale),
+                        pmt::from_double(tag.beta * q29_scale),
                         tag_srcid);
                     add_item_tag(0,
                                  tag_offset,
