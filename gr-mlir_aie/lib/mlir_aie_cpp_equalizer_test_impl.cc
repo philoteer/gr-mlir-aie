@@ -161,6 +161,7 @@ int mlir_aie_cpp_equalizer_test_impl::general_work(int noutput_items,
     const auto csi_key = pmt::intern("csi");
     const auto tag_srcid = pmt::intern("frame_equalizer");
     constexpr double q16_15_scale = 1.0 / (std::int64_t{ 1 } << 15);
+    constexpr double snr_q4_scale = static_cast<double>(1 << 4);
     constexpr double q29_scale = static_cast<double>(std::int64_t{ 1 } << 29);
     const uint64_t input_abs_start = nitems_read(0);
     const uint64_t output_abs_start = nitems_written(0);
@@ -240,8 +241,8 @@ int mlir_aie_cpp_equalizer_test_impl::general_work(int noutput_items,
                     };
                 }
 
-                const double snr =
-                    10.0 * std::log10(static_cast<double>(tag.snr_linear) / 2.0);
+                const double snr = 10.0 * std::log10(
+                    static_cast<double>(tag.snr_linear) / (2.0 * snr_q4_scale));
                 add_item_tag(0,
                              tag_offset,
                              frame_bytes_key,

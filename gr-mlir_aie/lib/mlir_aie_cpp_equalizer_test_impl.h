@@ -69,7 +69,7 @@ private:
     static_assert(sizeof(tag_metadata) == 560,
                    "frame equalizer tag metadata ABI changed");
     static_assert(offsetof(tag_metadata, snr_linear) == 24,
-                  "frame equalizer linear SNR ABI changed");
+                  "frame equalizer Q4.4 SNR ABI changed");
     static_assert(offsetof(tag_metadata, center_frequency_mhz) == 32,
                   "frame equalizer center frequency ABI changed");
     static_assert(offsetof(tag_metadata, frequency_offset) == 36,
