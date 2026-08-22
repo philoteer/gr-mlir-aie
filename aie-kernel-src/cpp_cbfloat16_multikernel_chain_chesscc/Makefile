@@ -42,15 +42,29 @@ else
 KERNEL_CHESSCCWRAP_FLAGS = ${CHESSCCWRAP2_FLAGS}
 endif
 
+# One object per stage kernel (stateful; see the stage_*.cc files)
+KERNEL_OBJS = \
+	build/stage_scale_mul.o \
+	build/stage_rotate90.o \
+	build/stage_add_const.o
+
 build/aie.mlir: ${srcdir}/aie2.py
 	mkdir -p ${@D}
 	FIFO_DEPTH=$(FIFO_DEPTH) python3 $< ${devicename} > $@
 
-build/chain_kernels.o: ${srcdir}/chain_kernels.cc ${srcdir}/../aie_kernel_utils.h
+build/stage_scale_mul.o: ${srcdir}/stage_scale_mul.cc ${srcdir}/../aie_kernel_utils.h
 	mkdir -p ${@D}
 	cd ${@D} && xchesscc_wrapper ${KERNEL_CHESSCCWRAP_FLAGS} -c $< -o ${@F}
 
-build/final.xclbin: build/aie.mlir build/chain_kernels.o
+build/stage_rotate90.o: ${srcdir}/stage_rotate90.cc ${srcdir}/../aie_kernel_utils.h
+	mkdir -p ${@D}
+	cd ${@D} && xchesscc_wrapper ${KERNEL_CHESSCCWRAP_FLAGS} -c $< -o ${@F}
+
+build/stage_add_const.o: ${srcdir}/stage_add_const.cc ${srcdir}/../aie_kernel_utils.h
+	mkdir -p ${@D}
+	cd ${@D} && xchesscc_wrapper ${KERNEL_CHESSCCWRAP_FLAGS} -c $< -o ${@F}
+
+build/final.xclbin: build/aie.mlir ${KERNEL_OBJS}
 	mkdir -p ${@D}
 	cd ${@D} && aiecc.py --aie-generate-xclbin --no-compile-host --xclbin-name=${@F} \
 				--aie-generate-npu-insts --npu-insts-name=insts.bin $(<:%=../%)

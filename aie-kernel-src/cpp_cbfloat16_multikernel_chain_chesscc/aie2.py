@@ -67,20 +67,25 @@ tile_size = tensor_size // TILE_ITERATIONS # complex samples per tile
 tensor_ty = np.ndarray[(tensor_size * 2,), np.dtype[ml_dtypes.bfloat16]]
 tile_ty = np.ndarray[(tile_size * 2,), np.dtype[ml_dtypes.bfloat16]]
 
-# External, binary kernel definitions (one per stage, all in chain.o)
+# External, binary kernel definitions (one .o per stage, one per core).
+#
+# Every kernel is stateful (see the individual stage_*.cc files): it keeps an
+# internal phase counter that advances once per processed tile and modulates
+# the computation.  The kernels are NOT memoryless - the output of a tile
+# depends on how many tiles were fed to the core since it was (re)started.
 stage_scale_mul_fn = Kernel(
     "stage_scale_mul",
-    "chain_kernels.o",
+    "stage_scale_mul.o",
     [tile_ty, tile_ty, np.int32],
 )
 stage_rotate90_fn = Kernel(
     "stage_rotate90",
-    "chain_kernels.o",
+    "stage_rotate90.o",
     [tile_ty, tile_ty, np.int32],
 )
 stage_add_const_fn = Kernel(
     "stage_add_const",
-    "chain_kernels.o",
+    "stage_add_const.o",
     [tile_ty, tile_ty, np.int32],
 )
 
