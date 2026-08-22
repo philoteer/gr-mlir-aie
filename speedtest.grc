@@ -45,23 +45,29 @@ blocks:
     coordinate: [184, 12]
     rotation: 0
     state: enabled
-- name: blocks_int_to_float_0
-  id: blocks_int_to_float
+- name: analog_sig_source_x_0
+  id: analog_sig_source_x
   parameters:
     affinity: ''
     alias: ''
+    amp: '1'
     comment: ''
+    freq: '1000'
     maxoutbuf: '0'
     minoutbuf: '0'
-    scale: '1'
-    vlen: '1'
+    offset: '0'
+    phase: '0'
+    samp_rate: samp_rate
+    showports: 'False'
+    type: complex
+    waveform: analog.GR_COS_WAVE
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [912, 504.0]
+    coordinate: [64, 256.0]
     rotation: 0
-    state: disabled
+    state: enabled
 - name: blocks_message_debug_0
   id: blocks_message_debug
   parameters:
@@ -74,7 +80,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [848, 104.0]
+    coordinate: [776, 64.0]
     rotation: 0
     state: enabled
 - name: blocks_null_sink_0
@@ -85,13 +91,13 @@ blocks:
     bus_structure_sink: '[[0,],]'
     comment: ''
     num_inputs: '1'
-    type: int
+    type: complex
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [904, 408.0]
+    coordinate: [1136, 344.0]
     rotation: 0
     state: enabled
 - name: blocks_probe_rate_0
@@ -105,33 +111,43 @@ blocks:
     minoutbuf: '0'
     mintime: '500.0'
     name: ''
-    type: int
+    type: complex
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [512, 112.0]
+    coordinate: [376, 152.0]
     rotation: 0
     state: enabled
-- name: blocks_vector_source_x_0
-  id: blocks_vector_source_x
+- name: mlir_aie_cbfloat_to_complex64_0
+  id: mlir_aie_cbfloat_to_complex64
   parameters:
     affinity: ''
     alias: ''
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    repeat: 'True'
-    tags: '[]'
-    type: int
-    vector: range(1,256)
-    vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [312, 272.0]
+    coordinate: [824, 336.0]
+    rotation: 0
+    state: enabled
+- name: mlir_aie_complex64_to_cbfloat_0
+  id: mlir_aie_complex64_to_cbfloat
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [392, 408.0]
     rotation: 0
     state: enabled
 - name: mlir_aie_mlir_aie_cpp_int32_0
@@ -144,13 +160,13 @@ blocks:
     kernel_name: MLIR_AIE
     maxoutbuf: '0'
     minoutbuf: '0'
-    path_insts_bin: /home/piloteer/xdna_phy/gr-mlir-aie/aie-kernel-src/simple_passthru/build/insts.bin
-    path_xclbin: /home/piloteer/xdna_phy/gr-mlir-aie/aie-kernel-src/simple_passthru/build/final.xclbin
+    path_insts_bin: aie-kernel-src/cpp_cbfloat16_multikernel_chain_chesscc/build/insts.bin
+    path_xclbin: aie-kernel-src/cpp_cbfloat16_multikernel_chain_chesscc/build/final.xclbin
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 376.0]
+    coordinate: [584, 376.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -227,7 +243,7 @@ blocks:
     tr_mode: qtgui.TRIG_MODE_FREE
     tr_slope: qtgui.TRIG_SLOPE_POS
     tr_tag: '""'
-    type: float
+    type: complex
     update_time: '0.10'
     width1: '1'
     width10: '1'
@@ -247,17 +263,18 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1136, 488.0]
+    coordinate: [1080, 440.0]
     rotation: 0
     state: disabled
 
 connections:
-- [blocks_int_to_float_0, '0', qtgui_time_sink_x_0, '0']
+- [analog_sig_source_x_0, '0', blocks_probe_rate_0, '0']
+- [analog_sig_source_x_0, '0', mlir_aie_complex64_to_cbfloat_0, '0']
 - [blocks_probe_rate_0, rate, blocks_message_debug_0, log]
-- [blocks_vector_source_x_0, '0', blocks_probe_rate_0, '0']
-- [blocks_vector_source_x_0, '0', mlir_aie_mlir_aie_cpp_int32_0, '0']
-- [mlir_aie_mlir_aie_cpp_int32_0, '0', blocks_int_to_float_0, '0']
-- [mlir_aie_mlir_aie_cpp_int32_0, '0', blocks_null_sink_0, '0']
+- [mlir_aie_cbfloat_to_complex64_0, '0', blocks_null_sink_0, '0']
+- [mlir_aie_cbfloat_to_complex64_0, '0', qtgui_time_sink_x_0, '0']
+- [mlir_aie_complex64_to_cbfloat_0, '0', mlir_aie_mlir_aie_cpp_int32_0, '0']
+- [mlir_aie_mlir_aie_cpp_int32_0, '0', mlir_aie_cbfloat_to_complex64_0, '0']
 
 metadata:
   file_format: 1
