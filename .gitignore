@@ -13,6 +13,7 @@ aie-kernel-src/build/
 *.lo
 *.so
 *.so.*
+speed.py
 
 __pycache__/
 
